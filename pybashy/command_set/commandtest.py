@@ -42,28 +42,38 @@ __license__ = 'GPLv3'
 
 # loose commands to load in as file name
 # only one set like this allowed
-steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
-		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
-		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
-        	}
-
+steps = { 'ls_user' : ["ls -la ~/",  "[+] Command Sucessful", 
+									 "[-] Command Failed! Check the logfile!"],
+		  'ls_root' : ["ls -la /", 	 "[+] Command Sucessful!", 
+		 							 "[-] Command Failed! Check the logfile!"],
+		  'ls_etc'  : ["ls -la /etc","[+] Command Sucessful", 
+		 							 "[-] ls -la Failed! Check the logfile!"]
+			}
+info_message	= "[+] Informational Text!"
 success_message = "[+] Test Sucessful!"
 failure_message = "[-] Test Failure!"
 
 # functions MUST START with "function"
 # many of these allowed
 def function_test_function1(params):
-	steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
-		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
-		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
+	steps = { 'ls_user' : ["ls -la ~/",  "[+] Command Sucessful", 
+										 "[-] Command Failed! Check the logfile!"],
+		 	  'ls_root' : ["ls -la /", 	 "[+] Command Sucessful!", 
+		 								 "[-] Command Failed! Check the logfile!"],
+		 	  'ls_etc'  : ["ls -la /etc","[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
 			}
+	info_message	= "[+] Informational Text!"
 	success_message = "[+] Test Sucessful!"
 	failure_message = "[-] Test Failure!"
 
 def function_test_function2(params):
-	steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
-		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
-		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
+	steps = { 'ls_user' : ["ls -la ~/",  "[+] Command Sucessful", 
+										 "[-] Command Failed! Check the logfile!"],
+		 	  'ls_root' : ["ls -la /",   "[+] Command Sucessful!",
+										 "[-] Command Failed! Check the logfile!"],
+		 	  'ls_etc'  : ["ls -la /etc","[+] Command Sucessful",
+			   							 "[-] ls -la Failed! Check the logfile!"]
 			}
+	info_message	= "[+] Informational Text!"
 	success_message = "[+] Test Sucessful!"
 	failure_message = "[-] Test Failure!"
