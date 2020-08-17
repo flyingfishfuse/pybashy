@@ -14,6 +14,7 @@ Basic structure of an extension/script is as thus
 		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
 		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
         	}
+    info_message = "[+] Informational Text!"
     success_message = "[+] Test Sucessful!"
     failure_message = "[-] Test Failure!"
 
@@ -22,6 +23,7 @@ Basic structure of an extension/script is as thus
 		     'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
 		     'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
 			    }
+	   info_message	= "[+] Informational Text!"
 	   success_message = "[+] Test Sucessful!"
 	   failure_message = "[-] Test Failure!"
 
