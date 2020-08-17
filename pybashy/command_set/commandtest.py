@@ -28,9 +28,12 @@
 ################################################################################
 
 """
-This is a test of the command framework
-you import this file
-ls_test should be assigned to a CommandSet() class
+This is a most basic example of the command framework
+you import this file with :
+	new_command = CommandRunner()
+	new_command.dynamic_import('commandtest')
+	finished_command = new_command.worker_bee()
+
 """
 __author__ = 'Adam Galindo'
 __email__ = 'null@null.com'
@@ -38,10 +41,29 @@ __version__ = '1'
 __license__ = 'GPLv3'
 
 # loose commands to load in as file name
-ls_test = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
+# only one set like this allowed
+steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
 		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
 		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
         	}
 
 success_message = "[+] Test Sucessful!"
 failure_message = "[-] Test Failure!"
+
+# functions MUST START with "function"
+# many of these allowed
+def function_test_function1(params):
+	steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
+		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
+		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
+			}
+	success_message = "[+] Test Sucessful!"
+	failure_message = "[-] Test Failure!"
+
+def function_test_function2(params):
+	steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
+		 'ls_root' : ["ls -la /", "[+] Command Sucessful!", "[-]  Command Failed! Check the logfile!"],
+		 'ls_etc'  : ["ls -la /etc", "[+] Command Sucessful", "[-] ls -la Failed! Check the logfile!"]
+			}
+	success_message = "[+] Test Sucessful!"
+	failure_message = "[-] Test Failure!"
