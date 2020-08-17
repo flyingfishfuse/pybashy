@@ -177,9 +177,6 @@ class CommandRunner:
 NARF!
 	'''
 	def __init__(self):
-		#for (k, v) in kwargs.items():
-		#	setattr(self, k, v)
-		# do stuff here?
 		print("[+] Command Framework Loaded")
 
 	def list_modules(self):

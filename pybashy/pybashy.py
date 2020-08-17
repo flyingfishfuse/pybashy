@@ -39,86 +39,79 @@ debootstrapy:
 	config file must be named "debootstrapy.config" and be in the same directory
 
 """
-#read, write = os.pipe()
-#step = subprocess.Popen(something_to_set_env, 
-#						shell=shell_env, 
-#						stdin=read, 
-#						stdout=sys.stdout, 
-#						stderr=subprocess.PIPE)
-#Note that this is limited to sending a maximum of 64kB at a time,
-# pretty much an interavtice session
-#byteswritten = os.write(write, str(command))
-
-import os
-import sys
-import inspect
-import pkgutil
-import pathlib
-import argparse
-import subprocess
-import configparser
-from pathlib import Path
-from io import BytesIO,StringIO
-from importlib import import_module
-
 __author__ 	= 'Adam Galindo'
 __email__ 	= 'null@null.com'
 __version__ = '1'
 __license__ = 'GPLv3'
 
+#prevent loading on import, if this framework is incorporated into another
+if __name__ == "__main__":
 ###################################################################################
 # Color Print Functions
 ###################################################################################
-import logging 
-try:
-	import colorama
-	from colorama import init
-	init()
-	from colorama import Fore, Back, Style
-	COLORMEQUALIFIED = True
-except ImportError as derp:
-	print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE")
-	COLORMEQUALIFIED = False
+	import os
+	import sys
+	import inspect
+	import pkgutil
+	import pathlib
+	import argparse
+	import subprocess
+	import configparser
+	from pathlib import Path
+	from io import BytesIO,StringIO
+	from importlib import import_module
 
-blueprint 			= lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
-	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-greenprint 			= lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
-	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-redprint 			= lambda text: print(Fore.RED + ' ' +  text + ' ' + \
-	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-# inline colorization for lambdas in a lambda
-makered				= lambda text: Fore.RED + ' ' +  text + ' ' + \
-	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makegreen  			= lambda text: Fore.GREEN + ' ' +  text + ' ' + \
-	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeblue  			= lambda text: Fore.BLUE + ' ' +  text + ' ' + \
-	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeyellow 			= lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
-	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-yellow_bold_print 	= lambda text: print(Fore.YELLOW + Style.BRIGHT + \
-	' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+	import logging 
+	try:
+		import colorama
+		from colorama import init
+		init()
+		from colorama import Fore, Back, Style
+		COLORMEQUALIFIED = True
+	except ImportError as derp:
+		print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE")
+		COLORMEQUALIFIED = False
 
-log_file = '/tmp/logtest'
-logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s', filemode='w')
-logger		   		= logging.getLogger()
-logger.setLevel(logging.DEBUG)
+	blueprint 			= lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
+		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+	greenprint 			= lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
+		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+	redprint 			= lambda text: print(Fore.RED + ' ' +  text + ' ' + \
+		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+	# inline colorization for lambdas in a lambda
+	makered				= lambda text: Fore.RED + ' ' +  text + ' ' + \
+		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+	makegreen  			= lambda text: Fore.GREEN + ' ' +  text + ' ' + \
+		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+	makeblue  			= lambda text: Fore.BLUE + ' ' +  text + ' ' + \
+		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+	makeyellow 			= lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
+		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+	yellow_bold_print 	= lambda text: print(Fore.YELLOW + Style.BRIGHT + \
+		' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 
-debug_message		= lambda message: logger.debug(blueprint(message)) 
-info_message		= lambda message: logger.info(greenprint(message)) 
-warning_message 	= lambda message: logger.warning(yellow_bold_print(message)) 
-error_message		= lambda message: logger.error(redprint(message)) 
-critical_message 	= lambda message: logger.critical(yellow_bold_print(message))
-#####################################################################################################################################################################
-# Commandline Arguments
-###################################################################################
-# If the user is running the program as a script we parse the arguments or use the 
-# config file. 
-# If the user is importing this as a module for usage as a command framework we do
-# not activate the argument or configuration file parsing engines
+	log_file = '/tmp/logtest'
+	logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s', filemode='w')
+	logger		   		= logging.getLogger()
+	logger.setLevel(logging.DEBUG)
 
-#prevent loading on import
-if __name__ == "__main__":
+	debug_message		= lambda message: logger.debug(blueprint(message)) 
+	info_message		= lambda message: logger.info(greenprint(message)) 
+	warning_message 	= lambda message: logger.warning(yellow_bold_print(message)) 
+	error_message		= lambda message: logger.error(redprint(message)) 
+	critical_message 	= lambda message: logger.critical(yellow_bold_print(message))
+	#####################################################################################################################################################################
+	# Commandline Arguments
+	###################################################################################
+	# If the user is running the program as a script we parse the arguments or use the 
+	# config file. 
+	# If the user is importing this as a module for usage as a command framework we do
+	# not activate the argument or configuration file parsing engines
 	parser = argparse.ArgumentParser(description='python/bash based, distro repacker')
+	parser.add_argument('--testing',
+								 dest		= 'testing',
+								 action		= "store_true" ,
+								 help		= 'will run a series of tests, testing modules not supported yet' )
 	parser.add_argument('--use-config',
 								 dest		= 'config_file',
 								 action		= "store_true" ,
@@ -134,7 +127,7 @@ if __name__ == "__main__":
 	parser.add_argument('--module-name',
 								 dest		= 'dynamic_import_name',
 								 action		= "store" ,
-								 help		= 'Name of user created module' )
+								 help		= 'Name of module to load' )
 
 	# dont use this here, not time for it to be parsed yet
 	#arguments = parser.parse_args()
@@ -143,15 +136,6 @@ class Stepper:
 #getattr, setattr and self.__dict__
 	'''
 Steps through the command list
-
-Load your file of commands and use them like this:
-
-		stepper = Stepper()
-		stepper.step(dict_of_commands = steps)
-		if isinstance(stepper, Exception):
-			error_exit("oh no", stepper)
-		else:
-			info_message("it did the thing!")
 	'''
 	def __init__(self):
 		self.script_cwd		   	= pathlib.Path().absolute()
@@ -161,6 +145,10 @@ Load your file of commands and use them like this:
 		 	 			 "ls_home" : ["ls -la ~/", "[-] failure message", "[+] success message" ] ,}
 	
 	def step_test(self, dict_of_commands : dict):
+		'''
+	edit this and propogate changes to self.step() to reflect changes in 
+	modules
+		'''
 		try:
 			for instruction in self.example.values(), self.example2.values():
 				cmd 	= instruction[0]
@@ -192,6 +180,16 @@ Load your file of commands and use them like this:
 	
 	def exec_command(self, command, blocking = True, shell_env = True):
 		'''TODO: add formatting'''
+		#read, write = os.pipe()
+#		step = subprocess.Popen(something_to_set_env, 
+#						shell=shell_env, 
+#						stdin=read, 
+#						stdout=sys.stdout, 
+#						stderr=subprocess.PIPE)
+#		Note that this is limited to sending a maximum of 64kB at a time,
+# 		pretty much an interactive session
+#		byteswritten = os.write(write, str(command))
+
 		try:
 			if blocking == True:
 				step = subprocess.Popen(command,
@@ -215,8 +213,8 @@ Load your file of commands and use them like this:
 class CommandSet():
 	'''
 	Basic structure of the command set execution pool
-feed it kwargs
-then feed it to the STEPPER
+	feed it kwargs
+	then feed it to the STEPPER
 	'''
 	def __init__(self, kwargs):
 		self.steps = dict
@@ -295,42 +293,34 @@ Goes running after commands
 		#yellow_bold_print(new_cmds)
 		return new_command_set
 
-#loading a module then executing it
 if __name__ == "__main__":
-	asdf = CommandRunner()
-	new_command_set_class = asdf.dynamic_import('commandtest')
+	arguments = parser.parse_args()
+	if arguments.testing == True:
+		asdf = Stepper()
+		asdf.step_test(asdf.example)
+		asdf.step_test(asdf.example2)
+		qwer = Chroot()
+		qwer.ls_test()
+		new_command = CommandRunner()
+		new_command_set_class = new_command.dynamic_import('commandtest')
 
-	#arguments = parser.parse_args()
-	#if 	arguments.use_args == True:
-	#asdf = Stepper()
-	#asdf.step_test(asdf.example)
-	#asdf.step_test(asdf.example2)
-	#qwer = Chroot()
-	#qwer.ls_test()
-
-#call via terminal
-#if __name__ == "__main__":
-#	arguments = parser.parse_args()
 	#are we using config?
-#	if arguments.config_file == True:
-#		config = configparser.ConfigParser()
-#		config.read(arguments.config_path)
+	if arguments.config_file == True:
+		config = configparser.ConfigParser()
+		config.read(arguments.config_path)
 		# user needs to set config file or arguments
-#		user_choice = config['Thing To Do']['choice']
-#		if user_choice== 'doofus':
-#			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
-#			raise SystemExit
-#			sys.exit()
+		user_choice = config['Thing To Do']['choice']
+		if user_choice== 'doofus':
+			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
+			raise SystemExit
+			sys.exit()
 		# Doesnt run for choice = DEFAULT unless (look down)
-#		elif user_choice in config.sections or (user_choice == 'DEFAULT'):
-#			kwargs = config[user_choice]
-#			thing_to_do = CommandRunner(**kwargs)
-		
-#		else:
-#			redprint("[-] Option not in config file")
+		elif user_choice in config.sections or (user_choice == 'DEFAULT'):
+			kwargs = config[user_choice]
+			thing_to_do = CommandRunner(**kwargs)
+		else:
+			redprint("[-] Option not in config file")
 # loading a module
-#	elif arguments.config_file == False and (arguments.dynamic_import == True):
-#		new_command = CommandRunner()
-#		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
-#
-#		pass
+	elif arguments.config_file == False and (arguments.dynamic_import == True):
+		new_command = CommandRunner()
+		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
