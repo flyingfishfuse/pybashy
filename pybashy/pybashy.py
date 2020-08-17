@@ -46,6 +46,8 @@ __license__ = 'GPLv3'
 
 #prevent loading on import, if this framework is incorporated into another
 if __name__ == "__main__":
+	# the things allowed/expected in a module
+	basic_items = ['steps','success_message', 'failure_message']
 ###################################################################################
 # Color Print Functions
 ###################################################################################
@@ -216,30 +218,51 @@ class CommandSet():
 	feed it kwargs
 	then feed it to the STEPPER
 	'''
+
 	def __init__(self, kwargs):
 		self.steps = dict
 		self.success_message = str
 		self.failure_message = str
 		#attempt to assign everything
+		#['steps','success_message', 'failure_message']
 		try:
 			for (key, value) in kwargs.items():
-				if key in ['steps','success_message', 'failure_message']:
+				if key in basic_items:
+					setattr(self, key, value)
+				elif key.startswith('function'):
 					setattr(self, key, value)
 				else:
 					raise KeyError(str(key))
 		except Exception as derp:
 			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
 		
-		self.worker_bee()
-		
 	def worker_bee(self):
+		'''
+	Worker_bee() gathers up all the things to do and brings them to the stepper
+		'''
+		#filter out class stuff, we are searching for functions
+		for thing in dir(self):
+			if thing.startswith('__') != True:
+				#if we imported a function, assign things properly
+				if thing.startswith('function'):
+					print(thing)
+					self.success_message = getattr(thing,'success_message')
+					self.failure_message = getattr(thing,'failure_message')
+					self.steps			 = getattr(thing,'steps')
+					stepper = Stepper()
+					stepper.step(self.steps)
+					if isinstance(stepper, Exception):
+						self.error_exit(self.failure_message, Exception)
+					else:
+						print(self.success_message)
 		stepper = Stepper()
 		stepper.step(self.steps)
+		# otherwise, everything is already assigned
 		if isinstance(stepper, Exception):
 			self.error_exit(self.failure_message, Exception)
 		else:
-			greenprint(self.success_message)
-	
+			print(self.success_message)
+
 	def error_exit(self, message : str, derp : Exception):
 		error_message(message = message)
 		print(derp.with_traceback)
@@ -281,47 +304,61 @@ Goes running after commands
 			returns a CommandSet()
 		''' 
 		kwargs = {}
+		kwargs_functions = {}
 		command_files_name = 'command_set.' + module_to_import
 		imported_file		= import_module(command_files_name )#, package='pybashy')
 		# dir just gets names:str
 		# to get values of those things, you need getattr(obj,name)
 		for thing in dir(imported_file):
+			# filter out other stuff
 			if thing.startswith('__') != True:
 				commandset = thing
-				kwargs[commandset] = getattr(imported_file, commandset)
+				# if the import has a function
+				if commandset.startswith('function'):
+					kwargs_functions[commandset] = getattr(imported_file, commandset)
+					yellow_bold_print(commandset)
+				# if the import contains a top level script
+				elif commandset in basic_items:
+					kwargs[commandset] = getattr(imported_file, commandset)
+		print(kwargs)
+		print(kwargs_functions)
 		new_command_set = CommandSet(kwargs)
 		#yellow_bold_print(new_cmds)
 		return new_command_set
 
 if __name__ == "__main__":
-	arguments = parser.parse_args()
-	if arguments.testing == True:
-		asdf = Stepper()
-		asdf.step_test(asdf.example)
-		asdf.step_test(asdf.example2)
 		new_command = CommandRunner()
-		new_command_set_class = new_command.dynamic_import('commandtest')
-
-	#are we using config?
-	if arguments.config_file == True:
-		config = configparser.ConfigParser()
-		config.read(arguments.config_path)
-		# user needs to set config file or arguments
-		user_choice = config['Thing To Do']['choice']
-		if user_choice== 'doofus':
-			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
-			raise SystemExit
-			sys.exit()
-		# Doesnt run for choice = DEFAULT unless (look down)
-		elif user_choice == 'DEFAULT':
-			pass
-		elif user_choice in config.sections:
-			modules_to_load:list 	= config['Thing To Do']['modules']
-			kwargs 					= config[user_choice]
-			thing_to_do 			= CommandRunner(**kwargs)
-		else:
-			redprint("[-] Option not in config file")
+		new_command_set_class = new_command.dynamic_import('booty')
+		completed_tasks = new_command_set_class.worker_bee()
+		print(dir(completed_tasks))
+#	arguments = parser.parse_args()
+#	if arguments.testing == True:
+#		asdf = Stepper()
+#		asdf.step_test(asdf.example)
+#		asdf.step_test(asdf.example2)
+#		new_command = CommandRunner()
+#		new_command_set_class = new_command.dynamic_import('commandtest')
+#
+#	#are we using config?
+#	if arguments.config_file == True:
+#		config = configparser.ConfigParser()
+#		config.read(arguments.config_path)
+#		# user needs to set config file or arguments
+#		user_choice = config['Thing To Do']['choice']
+#		if user_choice== 'doofus':
+#			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
+#			raise SystemExit
+#			sys.exit()
+#		# Doesnt run for choice = DEFAULT unless (look down)
+#		elif user_choice == 'DEFAULT':
+#			pass
+#		elif user_choice in config.sections:
+#			modules_to_load:list 	= config['Thing To Do']['modules']
+#			kwargs 					= config[user_choice]
+#			thing_to_do 			= CommandRunner(**kwargs)
+#		else:
+#			redprint("[-] Option not in config file")
 # loading a specialized module
-	elif arguments.config_file == False and (arguments.dynamic_import == True):
-		new_command = CommandRunner()
-		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
+#	elif arguments.config_file == False and (arguments.dynamic_import == True):
+#		new_command = CommandRunner()
+#		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
