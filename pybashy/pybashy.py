@@ -47,61 +47,22 @@ __license__ = 'GPLv3'
 #prevent loading on import, if this framework is incorporated into another
 if __name__ == "__main__":
 	# the things allowed/expected in a module
-	basic_items = ['steps','success_message', 'failure_message']
+	basic_items = ['steps','success_message', 'failure_message', 'info_message']
 ###################################################################################
-# Color Print Functions
+# Basic imports required for operation
 ###################################################################################
 	import os
 	import sys
 	import inspect
-	import pkgutil
-	import pathlib
 	import argparse
-	import subprocess
 	import configparser
-	from pathlib import Path
-	from io import BytesIO,StringIO
-	from importlib import import_module
 
-	import logging 
-	try:
-		import colorama
-		from colorama import init
-		init()
-		from colorama import Fore, Back, Style
-		COLORMEQUALIFIED = True
-	except ImportError as derp:
-		print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE")
-		COLORMEQUALIFIED = False
+	#import the framework
+	from pybash.useful_functions import *
+	from pybash.stepper import Stepper
+	from pybash.commandset import CommandSet
+	from pybash.commandrunner import CommandRunner
 
-	blueprint 			= lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
-		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-	greenprint 			= lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
-		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-	redprint 			= lambda text: print(Fore.RED + ' ' +  text + ' ' + \
-		Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-	# inline colorization for lambdas in a lambda
-	makered				= lambda text: Fore.RED + ' ' +  text + ' ' + \
-		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-	makegreen  			= lambda text: Fore.GREEN + ' ' +  text + ' ' + \
-		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-	makeblue  			= lambda text: Fore.BLUE + ' ' +  text + ' ' + \
-		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-	makeyellow 			= lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
-		Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-	yellow_bold_print 	= lambda text: print(Fore.YELLOW + Style.BRIGHT + \
-		' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-
-	log_file = '/tmp/logtest'
-	logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s', filemode='w')
-	logger		   		= logging.getLogger()
-	logger.setLevel(logging.DEBUG)
-
-	debug_message		= lambda message: logger.debug(blueprint(message)) 
-	info_message		= lambda message: logger.info(greenprint(message)) 
-	warning_message 	= lambda message: logger.warning(yellow_bold_print(message)) 
-	error_message		= lambda message: logger.error(redprint(message)) 
-	critical_message 	= lambda message: logger.critical(yellow_bold_print(message))
 	#####################################################################################################################################################################
 	# Commandline Arguments
 	###################################################################################
@@ -131,86 +92,6 @@ if __name__ == "__main__":
 								 action		= "store" ,
 								 help		= 'Name of module to load' )
 
-	# dont use this here, not time for it to be parsed yet
-	#arguments = parser.parse_args()
-
-class Stepper:
-#getattr, setattr and self.__dict__
-	'''
-Steps through the command list
-	'''
-	def __init__(self):
-		self.script_cwd		   	= pathlib.Path().absolute()
-		self.script_osdir	   	= pathlib.Path(__file__).parent.absolute()
-		self.example  = {"ls_root"  : ["ls -la /", "[+] success message", "[-] failure message" ]}
-		self.example2 = {"ls_etc"  : ["ls -la /etc"		  , "[-] failure message", "[+] success message" ] ,
-		 	 			 "ls_home" : ["ls -la ~/", "[-] failure message", "[+] success message" ] ,}
-	
-	def step_test(self, dict_of_commands : dict):
-		'''
-	edit this and propogate changes to self.step() to reflect changes in 
-	modules
-		'''
-		try:
-			for instruction in self.example.values(), self.example2.values():
-				cmd 	= instruction[0]
-				success = instruction[1]
-				fail 	= instruction[2]
-				self.current_command = cmd
-				stepper = self.exec_command(str(self.current_command))
-				if stepper.returncode == 1 :
-					info_message(success)
-				else:
-					error_message(fail)
-		except Exception as derp:
-			return derp
-
-	def step(self, dict_of_commands : dict):
-		try:
-			for instruction in dict_of_commands.values():
-				cmd 	= instruction[0]
-				success = instruction[1]
-				fail 	= instruction[2]
-				self.current_command = cmd
-				stepper = self.exec_command(self.current_command)
-				if stepper.returncode == 0 :
-					info_message(success)
-				else:
-					error_message(fail)
-		except Exception as derp:
-			return derp
-	
-	def exec_command(self, command, blocking = True, shell_env = True):
-		'''TODO: add formatting'''
-		#read, write = os.pipe()
-#		step = subprocess.Popen(something_to_set_env, 
-#						shell=shell_env, 
-#						stdin=read, 
-#						stdout=sys.stdout, 
-#						stderr=subprocess.PIPE)
-#		Note that this is limited to sending a maximum of 64kB at a time,
-# 		pretty much an interactive session
-#		byteswritten = os.write(write, str(command))
-
-		try:
-			if blocking == True:
-				step = subprocess.Popen(command,
-										shell=shell_env,
-				 						stdout=subprocess.PIPE,
-				 						stderr=subprocess.PIPE)
-				output, error = step.communicate()
-				for output_line in output.decode().split('\n'):
-					info_message(output_line)
-				for error_lines in error.decode().split('\n'):
-					critical_message(error_lines)
-				return step
-			elif blocking == False:
-				# TODO: not implemented yet				
-				pass
-		except Exception as derp:
-			yellow_bold_print("[-] Shell Command failed!")
-			return derp
-
 #meta class for loading the command sets into
 class CommandSet():
 	'''
@@ -235,130 +116,57 @@ class CommandSet():
 					raise KeyError(str(key))
 		except Exception as derp:
 			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
-		
-	def worker_bee(self):
-		'''
-	Worker_bee() gathers up all the things to do and brings them to the stepper
-		'''
-		#filter out class stuff, we are searching for functions
-		for thing in dir(self):
-			if thing.startswith('__') != True:
-				#if we imported a function, assign things properly
-				if thing.startswith('function'):
-					print(thing)
-					self.success_message = getattr(thing,'success_message')
-					self.failure_message = getattr(thing,'failure_message')
-					self.steps			 = getattr(thing,'steps')
-					stepper = Stepper()
-					stepper.step(self.steps)
-					if isinstance(stepper, Exception):
-						self.error_exit(self.failure_message, Exception)
-					else:
-						print(self.success_message)
-		stepper = Stepper()
-		stepper.step(self.steps)
-		# otherwise, everything is already assigned
-		if isinstance(stepper, Exception):
-			self.error_exit(self.failure_message, Exception)
-		else:
-			print(self.success_message)
-
-	def error_exit(self, message : str, derp : Exception):
-		error_message(message = message)
-		print(derp.with_traceback)
-		#sys.exit()
-
-
-class CommandRunner:
-	'''
-NARF!
-Goes running after commands
-	'''
-	def __init__(self):#,kwargs):
-		#for (k, v) in kwargs.items():
-		#	setattr(self, k, v)
-		pass
-
-	def list_modules(self):
-		'''
-	Lists modules in command_set directory
-		'''
-		list_of_modules = []
-		command_files_dir = os.path.dirname(__file__) + "/command_set"		
-		list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
-		for x in list_of_subfiles:
-			print(x.name)
-			list_of_modules.append(x.name)
-		return list_of_modules
-
-	###################################################################################
-	## Dynamic imports
-	###################################################################################
-	def dynamic_import(self, module_to_import:str):
-		'''
-		Dynamically imports a module
-			- used for the extensions
-
-		Usage:
-			thing = class.dynamic_import('pybash_script.classname', name='fishy')
-			returns a CommandSet()
-		''' 
-		kwargs = {}
-		kwargs_functions = {}
-		command_files_name = 'command_set.' + module_to_import
-		imported_file		= import_module(command_files_name )#, package='pybashy')
-		# dir just gets names:str
-		# to get values of those things, you need getattr(obj,name)
-		for thing in dir(imported_file):
-			# filter out other stuff
-			if thing.startswith('__') != True:
-				commandset = thing
-				# if the import has a function
-				if commandset.startswith('function'):
-					kwargs_functions[commandset] = getattr(imported_file, commandset)
-					yellow_bold_print(commandset)
-				# if the import contains a top level script
-				elif commandset in basic_items:
-					kwargs[commandset] = getattr(imported_file, commandset)
-		print(kwargs)
-		print(kwargs_functions)
-		new_command_set = CommandSet(kwargs)
-		#yellow_bold_print(new_cmds)
-		return new_command_set
 
 if __name__ == "__main__":
+	arguments = parser.parse_args()
+	if arguments.testing == True:
+		asdf = Stepper()
+		asdf.step_test(asdf.example)
+		asdf.step_test(asdf.example2)
 		new_command = CommandRunner()
-		new_command_set_class = new_command.dynamic_import('booty')
-		completed_tasks = new_command_set_class.worker_bee()
-		print(dir(completed_tasks))
-#	arguments = parser.parse_args()
-#	if arguments.testing == True:
-#		asdf = Stepper()
-#		asdf.step_test(asdf.example)
-#		asdf.step_test(asdf.example2)
-#		new_command = CommandRunner()
-#		new_command_set_class = new_command.dynamic_import('commandtest')
-#
-#	#are we using config?
-#	if arguments.config_file == True:
-#		config = configparser.ConfigParser()
-#		config.read(arguments.config_path)
-#		# user needs to set config file or arguments
-#		user_choice = config['Thing To Do']['choice']
-#		if user_choice== 'doofus':
-#			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
-#			raise SystemExit
-#			sys.exit()
-#		# Doesnt run for choice = DEFAULT unless (look down)
-#		elif user_choice == 'DEFAULT':
-#			pass
-#		elif user_choice in config.sections:
-#			modules_to_load:list 	= config['Thing To Do']['modules']
-#			kwargs 					= config[user_choice]
-#			thing_to_do 			= CommandRunner(**kwargs)
-#		else:
-#			redprint("[-] Option not in config file")
-# loading a specialized module
-#	elif arguments.config_file == False and (arguments.dynamic_import == True):
-#		new_command = CommandRunner()
-#		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
+		new_command_set_class = new_command.dynamic_import('commandtest')
+		finished_task = new_command_set_class.worker_bee()
+	#are we using config?
+	if arguments.config_file == True:
+		config = configparser.ConfigParser()
+		config.read(arguments.config_path)
+		# user needs to set config file or arguments
+		user_choice = config['Thing To Do']['choice']
+		if user_choice== 'doofus':
+			yellow_bold_print("YOU HAVE TO CONFIGURE THE DARN THING FIRST!")
+			raise SystemExit
+			sys.exit()
+		# Doesnt run for choice = DEFAULT unless (look down)
+		elif user_choice == 'DEFAULT':
+			asdf = Stepper()
+			asdf.step_test(asdf.example)
+			asdf.step_test(asdf.example2)
+			new_command = CommandRunner()
+			new_stepper = Stepper()
+			new_command_set_class = new_command.dynamic_import('commandtest')
+			finished_task = new_stepper.worker_bee(new_command_set_class)
+		#if the user chose a section in the config file
+		elif user_choice in config.sections:
+			#find the list of modules they want to load
+			modules_to_load:list 	= config['Thing To Do']['modules'].split(',')
+			#sort through them to see if they are requesting something that actually exists
+			for extension in modules_to_load:
+				module_loader = CommandRunner()
+				if extension in module_loader.list_modules():
+					module_loader.dynamic_import(extension)
+				else:
+					yellow_bold_print("[-] Module not in framework : " + str(extension))
+					raise SystemExit
+					sys.exit()
+			# now that the modules are loaded, assign options to kwargs
+			kwargs 	= {}
+			for option, value in config[user_choice]
+				kwargs[option] = value
+			thing_to_do = CommandRunner()#**kwargs)
+			thing_to_do.
+		else:
+			redprint("[-] Option not in config file")
+ 	#loading a specialized module
+	elif arguments.config_file == False and (arguments.dynamic_import == True):
+		new_command = CommandRunner()
+		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
