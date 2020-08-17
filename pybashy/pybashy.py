@@ -299,8 +299,6 @@ if __name__ == "__main__":
 		asdf = Stepper()
 		asdf.step_test(asdf.example)
 		asdf.step_test(asdf.example2)
-		qwer = Chroot()
-		qwer.ls_test()
 		new_command = CommandRunner()
 		new_command_set_class = new_command.dynamic_import('commandtest')
 
@@ -315,12 +313,15 @@ if __name__ == "__main__":
 			raise SystemExit
 			sys.exit()
 		# Doesnt run for choice = DEFAULT unless (look down)
-		elif user_choice in config.sections or (user_choice == 'DEFAULT'):
-			kwargs = config[user_choice]
-			thing_to_do = CommandRunner(**kwargs)
+		elif user_choice == 'DEFAULT':
+			pass
+		elif user_choice in config.sections:
+			modules_to_load:list 	= config['Thing To Do']['modules']
+			kwargs 					= config[user_choice]
+			thing_to_do 			= CommandRunner(**kwargs)
 		else:
 			redprint("[-] Option not in config file")
-# loading a module
+# loading a specialized module
 	elif arguments.config_file == False and (arguments.dynamic_import == True):
 		new_command = CommandRunner()
 		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
