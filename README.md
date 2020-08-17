@@ -1,8 +1,12 @@
 # pybashy
+	framework for leveraging python to run sets of shell commands for specific tasks. 
 
-    - framework for leveraging python to run sets of shell commands for specific tasks. 
-    
-    - Command Sets are stored as dicts in seperate files and loaded dynamically.
+  
+Only one set of commands can be at the top level of a file
+  - Command Sets are stored as dicts in seperate files and loaded dynamically.
+  - Multiple sets can be placed in thier own unique functions
+  - functions MUST START with "function"
+  - Classes not allowed as implied inheritance isnt working yet
 
 Basic structure of an extension/script is as thus
 
@@ -12,13 +16,6 @@ Basic structure of an extension/script is as thus
         	}
     success_message = "[+] Test Sucessful!"
     failure_message = "[-] Test Failure!"
-    
-    
-only one set of commands can be at the top level of a file
-  - Multiple sets can be placed in thier own unique functions
-  - functions MUST START with "function"
-  - many of these allowed
-  
 
     def function_test_function1(params):
       steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
