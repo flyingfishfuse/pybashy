@@ -24,3 +24,7 @@ Basic structure of an extension/script is as thus
 			    }
 	   success_message = "[+] Test Sucessful!"
 	   failure_message = "[-] Test Failure!"
+
+Obvoiusly you can perform `str.format(thing)` on the commands, provided they are formatted properly for `os.popen()`
+Thereby allowing you to perform complex shell scripting through a pythonic interface. I suggest you use bpython with it 
+Until I manage to incorporate that environment
