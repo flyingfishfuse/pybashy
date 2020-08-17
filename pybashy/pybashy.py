@@ -230,7 +230,7 @@ then feed it to the STEPPER
 				else:
 					raise KeyError(str(key))
 		except Exception as derp:
-			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp.with_traceback)
+			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
 		
 		self.worker_bee()
 		
@@ -238,19 +238,20 @@ then feed it to the STEPPER
 		stepper = Stepper()
 		stepper.step(self.steps)
 		if isinstance(stepper, Exception):
-			stepper.error_exit(self.failure_message, Exception)
+			self.error_exit(self.failure_message, Exception)
 		else:
 			greenprint(self.success_message)
 	
 	def error_exit(self, message : str, derp : Exception):
 		error_message(message = message)
 		print(derp.with_traceback)
-		sys.exit()
+		#sys.exit()
 
 
 class CommandRunner:
 	'''
 NARF!
+Goes running after commands
 	'''
 	def __init__(self):#,kwargs):
 		#for (k, v) in kwargs.items():
@@ -259,10 +260,10 @@ NARF!
 
 	def list_modules(self):
 		'''
-	Lists modules in command_sets directory
+	Lists modules in command_set directory
 		'''
 		list_of_modules = []
-		command_files_dir = os.path.dirname(__file__) + "/command_sets"		
+		command_files_dir = os.path.dirname(__file__) + "/command_set"		
 		list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
 		for x in list_of_subfiles:
 			print(x.name)
@@ -281,22 +282,24 @@ NARF!
 			thing = class.dynamic_import('pybash_script.classname', name='fishy')
 			returns a CommandSet()
 		''' 
-		command_files_name = 'command_sets.' + module_to_import
-		#command_files_dir = os.path.dirname(__file__) + "/command_sets"
+		kwargs = {}
+		command_files_name = 'command_set.' + module_to_import
 		imported_file		= import_module(command_files_name )#, package='pybashy')
+		# dir just gets names:str
+		# to get values of those things, you need getattr(obj,name)
 		for thing in dir(imported_file):
 			if thing.startswith('__') != True:
 				commandset = thing
-		
-		new_cmds = getattr(imported_file, commandset)
-		new_command_set = CommandSet(new_cmds)
+				kwargs[commandset] = getattr(imported_file, commandset)
+		new_command_set = CommandSet(kwargs)
 		#yellow_bold_print(new_cmds)
 		return new_command_set
 
 #loading a module then executing it
 if __name__ == "__main__":
 	asdf = CommandRunner()
-	asdf.dynamic_import('commandtest')
+	new_command_set_class = asdf.dynamic_import('commandtest')
+
 	#arguments = parser.parse_args()
 	#if 	arguments.use_args == True:
 	#asdf = Stepper()
@@ -325,8 +328,9 @@ if __name__ == "__main__":
 		
 #		else:
 #			redprint("[-] Option not in config file")
+# loading a module
 #	elif arguments.config_file == False and (arguments.dynamic_import == True):
 #		new_command = CommandRunner()
-#	   new_command_class = new_command.dynamic_import(arguments.dynamic_import, arguments.dynamic_import)
+#		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
 #
 #		pass
