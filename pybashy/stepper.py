@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from pybash.useful_functions import info_message,error_message,yellow_bold_print,critical_message
+from useful_functions import info_message,error_message,yellow_bold_print,critical_message
 
 class Stepper:
 #getattr, setattr and self.__dict__
@@ -13,6 +13,12 @@ Steps through the command list
 		self.example  = {"ls_root"  : ["ls -la /", "[+] success message", "[-] failure message" ]}
 		self.example2 = {"ls_etc"  : ["ls -la /etc"		  , "[-] failure message", "[+] success message" ] ,
 		 	 			 "ls_home" : ["ls -la ~/", "[-] failure message", "[+] success message" ] ,}
+
+
+	def error_exit(self, message : str, derp : Exception):
+		error_message(message = message)
+		print(derp.with_traceback)
+		sys.exit()	
 	
 	def step_test(self, dict_of_commands : dict):
 		'''
@@ -105,7 +111,7 @@ Steps through the command list
 							print(self.success_message)
 			# the user wants to run all functions in the class
 			else:
-				for thing in dir(flower:)
+				for thing in dir(flower):
 					if thing.startswith('__') != True:
 						#if we imported a function, assign things properly
 						if thing.startswith('function'):
@@ -125,8 +131,5 @@ Steps through the command list
 				self.error_exit(self.failure_message, Exception)
 			else:
 				print(self.success_message)
-
-	def error_exit(self, message : str, derp : Exception):
-		error_message(message = message)
-		print(derp.with_traceback)
-		#sys.exit()
+		except Exception as derp:
+			self.error_exit(self.failure_message, derp)

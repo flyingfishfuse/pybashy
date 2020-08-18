@@ -1,9 +1,9 @@
 import os
 import pkgutil
 from importlib import import_module
-from pybashy import CommandSet
 
-
+from commandset import CommandSet
+from useful_functions import *
 class CommandRunner:
 	'''
 NARF!
@@ -27,6 +27,11 @@ Goes running after commands
 			list_of_modules.append(x.name)
 		return list_of_modules
 
+#apt_install = { 'apt_install' 	: ["sudo -S apt install {}".format(packages), 
+#					'info_message'		: "[+] Informational Text!",
+#					'success_message'	: "[+] 	Sucessful!",
+#					'failure_message'	: "[-] 	Failure!"]
+#				}
 	def get_functions(self, file_import):
 		kwargs 				= {}
 		kwargs_functions 	= {}
@@ -39,8 +44,14 @@ Goes running after commands
 				if commandset.startswith('function'):
 					kwargs_functions[commandset] = getattr(file_import, commandset)
 					print(commandset)
-				# if the import contains a top level script
+				# if the import contains a loose dict
 				elif isinstance(commandset, dict):
+					command_array = commandset.items()
+					print(commandset.items())
+					info_message = command_array[1]
+					success_message = command_array[2]
+					failure_message = command_array[3]
+					
 					kwargs_loose_dicts[commandset] = getattr(file_import, commandset)
 				#if the import IS a script
 				# it has things at top already
