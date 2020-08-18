@@ -35,36 +35,37 @@ Goes running after commands
 	def get_functions(self, file_import):
 		kwargs 				= {}
 		kwargs_functions 	= {}
-		command_pool = {}
-		for thing in dir(file_import):
+		command_pool        = {}
+		kwargs_single_command = {}
+		for thing_name in dir(file_import):
 		# filter out other stuff
-			if thing.startswith('__') != True:
-				commandset = thing
-				if commandset.startswith('function'):
+			if thing_name.startswith('__') != True:
+				if thing_name.startswith('function'):
 					#assign function to value
-					kwargs_functions[commandset] = getattr(file_import, commandset)
-				kwargs[commandset] = getattr(file_import, commandset)
+					kwargs_functions[thing_name] = getattr(file_import, thing_name)
+				#everything_name else not internal to the import class
+				
+				else:
+					print(thing_name)
+					kwargs[thing_name] = getattr(file_import, thing_name)
+
+				#if thing_name not in self.basic_items:
+				#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
+				
 		#kwargs done
 		if len(kwargs) > 0:
-			new_command_set = CommandSet()
-			new_command_set.add_commands(kwargs)
-			command_pool['test'] = new_command_set
-		#print(kwargs )
+			new_command_set = CommandSet(kwargs)
+			command_pool['top_level_steps'] = new_command_set
+		
+		command_pool[file_import.__name__] = CommandSet(kwargs_single_command)
+
 		for function_name,function_object in kwargs_functions.items():
-			new_command_set = CommandSet()
+			new_command_set = CommandSet(kwargs)
 			setattr(new_command_set,function_name,function_object)
+			
 			command_pool[function_name] = new_command_set
-			kwargs = command_pool
-			new_command_set.add_commands(kwargs)
-		for each in command_pool:
-			print(each)
-			for thing in dir(each):
-				print(thing)
-		# {'function_test_function1': <function function_test_function1>, 'function_test_function2': <function function_test_function2 >}
-		#print(kwargs_loose_dicts)
-		# now convert everything to wkargs for commandset
-		#
-		#return new_command_set
+
+		return command_pool
 		
 	###################################################################################
 	## Dynamic imports
@@ -80,7 +81,8 @@ Goes running after commands
 		''' 
 		command_files_name 	= 'command_set.' + module_to_import
 		imported_file		= import_module(command_files_name)#, package='pybashy')
-		self.get_functions(imported_file)
+		command_pool_dict = self.get_functions(imported_file)
+		return command_pool_dict
 		#kwargs = self.get_functions(imported_file)
 		#new_command_set = CommandSet(kwargs)
 		#return new_command_set

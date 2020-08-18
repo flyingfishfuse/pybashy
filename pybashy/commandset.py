@@ -53,15 +53,7 @@ class CommandSet():
 		print(derp.with_traceback)
 		#sys.exit()	
 	
-	def __init__(self):
-		self.steps = dict
-		self.info_message	 = str
-		self.success_message = str
-		self.failure_message = str
-		#attempt to assign everything
-		#['steps','success_message', 'failure_message']
-
-	def add_commands(self,kwargs):
+	def __init__(self,kwargs):
 		try:
 			for (key, value) in kwargs.items():
 				#if key in basic_items or (key.startswith('function')):

@@ -118,8 +118,14 @@ if __name__ == "__main__":
 			#asdf.step_test(asdf.example2)
 			new_command = CommandRunner()
 			new_stepper = Stepper()
-			new_command_set_class = new_command.dynamic_import('commandtest')
-			finished_task = new_stepper.worker_bee(new_command_set_class,)
+			new_command_pool = new_command.dynamic_import('commandtest')
+			for command_name,command_set_object in new_command_pool.items():
+				for thing_name in dir(command_set_object):
+					print(command_name)
+					if thing_name.startswith('__') != True:
+						yellow_bold_print(thing_name)
+			
+			#finished_task = new_stepper.worker_bee(new_command_set_class,)
 
 	def load_modules():
 		module_pool = {}
@@ -168,4 +174,5 @@ if __name__ == "__main__":
  	#loading a specialized module
 	elif arguments.config_file == False and (arguments.dynamic_import == True):
 		new_command = CommandRunner()
-		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)
+		new_command_pool = new_command.dynamic_import(arguments.dynamic_import_name)
+
