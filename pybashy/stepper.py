@@ -79,33 +79,52 @@ Steps through the command list
 			yellow_bold_print("[-] Shell Command failed!")
 			return derp
 	
-	def worker_bee(self, pollen):
+	def worker_bee(self, flower , pollen):
 		'''
 	Worker_bee() gathers up all the things to do and brings them to the stepper
 	Dont run this function unless you want to run the scripts!
-	pollen is a CommandSet()
+	
+		- Flower is a CommandSet() and is Required
+		
+		- Pollen is the name of the function to run!
+			only required if running in scripting mode
 		'''
-		#filter out class stuff, we are searching for functions
-		for thing in dir(pollen):
-			if thing.startswith('__') != True:
-				#if we imported a function, assign things properly
-				if thing.startswith('function'):
-					print(thing)
-					self.success_message = getattr(thing,'success_message')
-					self.failure_message = getattr(thing,'failure_message')
-					self.steps			 = getattr(thing,'steps')
-					stepper = self.step(self.steps)
-					if isinstance(stepper, Exception):
-						self.error_exit(self.failure_message, Exception)
-					else:
-						print(self.success_message)
-		# stepping on ourselves here arent we?
-		stepper = self.step(self.steps)
-		# otherwise, everything is already assigned
-		if isinstance(stepper, Exception):
-			self.error_exit(self.failure_message, Exception)
-		else:
-			print(self.success_message)
+		try:
+			#requesting a specific function
+			if pollen == True:
+				#filter out class stuff, we are searching for functions
+				for thing in dir(flower):
+					if thing.startswith('function') and thing.endswith(pollen):
+						self.success_message = getattr(thing,'success_message')
+						self.failure_message = getattr(thing,'failure_message')
+						self.steps			 = getattr(thing,'steps')
+						stepper = self.step(self.steps)
+						if isinstance(stepper, Exception):
+							self.error_exit(self.failure_message, Exception)
+						else:
+							print(self.success_message)
+			# the user wants to run all functions in the class
+			else:
+				for thing in dir(flower:)
+					if thing.startswith('__') != True:
+						#if we imported a function, assign things properly
+						if thing.startswith('function'):
+							print(thing)
+							self.success_message = getattr(thing,'success_message')
+							self.failure_message = getattr(thing,'failure_message')
+							self.info_message    = getattr(thing,'failure_message')
+							self.steps			 = getattr(thing,'steps')
+							stepper = self.step(self.steps)
+							if isinstance(stepper, Exception):
+								self.error_exit(self.failure_message, Exception)
+							else:
+								print(self.success_message)
+			# otherwise, everything is already assigned
+			stepper = self.step(self.steps)
+			if isinstance(stepper, Exception):
+				self.error_exit(self.failure_message, Exception)
+			else:
+				print(self.success_message)
 
 	def error_exit(self, message : str, derp : Exception):
 		error_message(message = message)

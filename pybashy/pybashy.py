@@ -60,7 +60,6 @@ if __name__ == "__main__":
 	#import the framework
 	from pybash.useful_functions import *
 	from pybash.stepper import Stepper
-	from pybash.commandset import CommandSet
 	from pybash.commandrunner import CommandRunner
 
 	#####################################################################################################################################################################
@@ -70,7 +69,7 @@ if __name__ == "__main__":
 	# config file. 
 	# If the user is importing this as a module for usage as a command framework we do
 	# not activate the argument or configuration file parsing engines
-	parser = argparse.ArgumentParser(description='python/bash based, distro repacker')
+	parser = argparse.ArgumentParser(description='python based, bash task execution manager')
 	parser.add_argument('--testing',
 								 dest		= 'testing',
 								 action		= "store_true" ,
@@ -92,6 +91,23 @@ if __name__ == "__main__":
 								 action		= "store" ,
 								 help		= 'Name of module to load' )
 
+class Spider():
+	'''
+This is the threading class, a container I guess?
+I dunno, I change things fast and loose
+	'''
+	def __init__(self,kwargs):
+		for (k, v) in kwargs.items():
+			setattr(self, k, v)
+
+	def threader(self):
+		info_message("Thread {}: starting".format(name))
+		thread = threading.Thread(target=thread_function, args=(1,))
+		thread.start()
+		info_message("Thread {}: finishing".format(name))
+
+
+
 #meta class for loading the command sets into
 class CommandSet():
 	'''
@@ -99,9 +115,16 @@ class CommandSet():
 	feed it kwargs
 	then feed it to the STEPPER
 	'''
+	def __new__(cls, clsname, bases, clsdict):
+		return super().__new__(cls, clsname, bases, clsdict)
+	
+	def __repr__():
+		for item in dir(self):
+			print(item)
 
 	def __init__(self, kwargs):
 		self.steps = dict
+		self.info_message	 = str
 		self.success_message = str
 		self.failure_message = str
 		#attempt to assign everything
@@ -118,16 +141,39 @@ class CommandSet():
 			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
 
 if __name__ == "__main__":
+
+	def execute_test():
+			asdf = Stepper()
+			asdf.step_test(asdf.example)
+			asdf.step_test(asdf.example2)
+			new_command = CommandRunner()
+			new_stepper = Stepper()
+			new_command_set_class = new_command.dynamic_import('commandtest')
+			finished_task = new_stepper.worker_bee(new_command_set_class)
+
+	def load_modules():
+		module_pool = {}
+		module_loader = CommandRunner()
+		if extension in module_loader.list_modules():
+			module_pool[extension] = module_loader.dynamic_import(extension)
+		else:
+			yellow_bold_print("[-] Module not in framework : " + str(extension))
+			raise SystemExit
+			sys.exit()
+					# now that the modules are loaded, assign options to kwargs
+		kwargs 	= {}
+		for option, value in config[user_choice]:
+			kwargs[option] = value
+		
+		#thing_to_do = CommandSet(kwargs)
+		#modu
+
+
 	arguments = parser.parse_args()
-	if arguments.testing == True:
-		asdf = Stepper()
-		asdf.step_test(asdf.example)
-		asdf.step_test(asdf.example2)
-		new_command = CommandRunner()
-		new_command_set_class = new_command.dynamic_import('commandtest')
-		finished_task = new_command_set_class.worker_bee()
+	if arguments.testing == True and (arguments.config_file != True):
+		execute_test()
 	#are we using config?
-	if arguments.config_file == True:
+	if arguments.config_file == True and (arguments.testing != True):
 		config = configparser.ConfigParser()
 		config.read(arguments.config_path)
 		# user needs to set config file or arguments
@@ -138,32 +184,15 @@ if __name__ == "__main__":
 			sys.exit()
 		# Doesnt run for choice = DEFAULT unless (look down)
 		elif user_choice == 'DEFAULT':
-			asdf = Stepper()
-			asdf.step_test(asdf.example)
-			asdf.step_test(asdf.example2)
-			new_command = CommandRunner()
-			new_stepper = Stepper()
-			new_command_set_class = new_command.dynamic_import('commandtest')
-			finished_task = new_stepper.worker_bee(new_command_set_class)
+			execute_test()
 		#if the user chose a section in the config file
 		elif user_choice in config.sections:
 			#find the list of modules they want to load
-			modules_to_load:list 	= config['Thing To Do']['modules'].split(',')
+			modules_to_load:list = config['Thing To Do']['modules'].split(',')
 			#sort through them to see if they are requesting something that actually exists
 			for extension in modules_to_load:
-				module_loader = CommandRunner()
-				if extension in module_loader.list_modules():
-					module_loader.dynamic_import(extension)
-				else:
-					yellow_bold_print("[-] Module not in framework : " + str(extension))
-					raise SystemExit
-					sys.exit()
-			# now that the modules are loaded, assign options to kwargs
-			kwargs 	= {}
-			for option, value in config[user_choice]
-				kwargs[option] = value
-			thing_to_do = CommandRunner()#**kwargs)
-			thing_to_do.
+				# make a pool of CommandSet() objects in a dict, named after the module
+				load_modules()
 		else:
 			redprint("[-] Option not in config file")
  	#loading a specialized module
