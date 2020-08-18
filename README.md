@@ -8,6 +8,34 @@ Only one set of commands can be at the top level of a file
   - functions MUST START with "function"
   - Classes not allowed as implied inheritance isnt working yet
 
+you import modules with :
+
+	new_command = CommandRunner()
+	new_command.dynamic_import('commandtest')
+
+to run the execution pool, you use the worker_bee() function:
+
+	finished_command = new_command.worker_bee()
+
+Every command is a dict with an array of four string fields as the value:
+	
+	{'test1' : ['ls -la ~/','','','']}
+	
+	Array fields are as follows:
+  	  - Name of Command
+  	  - Command
+  	  - Informational message to print
+  	  - Success message
+  	  - Failure message
+
+Multiple commands can be placed in a dict, that are run sequentially:
+
+	{
+	  'test1' : ['ls -la ~/','','',''],
+	  'test2' : ['ls -la ./','','','']
+	}
+
+
 Basic structure of an extension/script is as thus
 
     steps = { 'ls_user' : ["ls -la ~/", "[+] Command Sucessful", "[-]  Command Failed! Check the logfile!"],
