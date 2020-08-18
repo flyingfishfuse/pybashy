@@ -21,12 +21,12 @@ Every command is a dict with an array of four string fields as the value:
 	
 	{'test1' : ['ls -la ~/','','','']}
 	
-	Array fields are as follows:
-  	  - Name of Command
-  	  - Command
-  	  - Informational message to print
-  	  - Success message
-  	  - Failure message
+	Fields are as follows:
+  	  - Name of Command : 		key
+  	      - Command 		value[0]
+  	      - Informational message	value[1]
+  	      - Success message		value[2]
+  	      - Failure message		value[3]
 
 Multiple commands can be placed in a dict, that are run sequentially:
 
