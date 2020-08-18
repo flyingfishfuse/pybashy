@@ -90,14 +90,14 @@ parser.add_argument('--module-name',
 							 dest		= 'dynamic_import_name',
 							 action		= "store" ,
 							 help		= 'Name of module to load' )
-class Spider():
+
+class CommandPool():
 	'''
-This is the threading class, a container I guess?
+This is the command pool threading class, a container I guess?
 I dunno, I change things fast and loose
 	'''
-	def __init__(self,kwargs):
-		for (k, v) in kwargs.items():
-			setattr(self, k, v)
+	def __init__(self):
+		pass
 
 	def threader(self, thread_function, name):
 		info_message("Thread {}: starting".format(name))
@@ -105,12 +105,17 @@ I dunno, I change things fast and loose
 		thread.start()
 		info_message("Thread {}: finishing".format(name))
 
+	def add_attributes_kwargs(self, kwargs):
+		for (k, v) in kwargs.items():
+			setattr(self, k, v)
+
+
 if __name__ == "__main__":
 
 	def execute_test():
-			asdf = Stepper()
-			asdf.step_test(asdf.example)
-			asdf.step_test(asdf.example2)
+			#asdf = Stepper()
+			#asdf.step_test(asdf.example)
+			#asdf.step_test(asdf.example2)
 			new_command = CommandRunner()
 			new_stepper = Stepper()
 			new_command_set_class = new_command.dynamic_import('commandtest')

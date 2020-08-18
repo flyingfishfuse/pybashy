@@ -3,7 +3,7 @@ import pkgutil
 from importlib import import_module
 
 from commandset import CommandSet
-from useful_functions import *
+from useful_functions import greenprint,yellow_bold_print,redprint
 class CommandRunner:
 	'''
 NARF!
@@ -35,31 +35,37 @@ Goes running after commands
 	def get_functions(self, file_import):
 		kwargs 				= {}
 		kwargs_functions 	= {}
-		kwargs_loose_dicts	= {}
+		command_pool = {}
 		for thing in dir(file_import):
 		# filter out other stuff
 			if thing.startswith('__') != True:
 				commandset = thing
-				# if the import has a function
 				if commandset.startswith('function'):
+					#assign function to value
 					kwargs_functions[commandset] = getattr(file_import, commandset)
-					print(commandset)
-				# if the import contains a loose dict
-				elif isinstance(commandset, dict):
-					command_array = commandset.items()
-					print(commandset.items())
-					info_message = command_array[1]
-					success_message = command_array[2]
-					failure_message = command_array[3]
-					
-					kwargs_loose_dicts[commandset] = getattr(file_import, commandset)
-				#if the import IS a script
-				# it has things at top already
-				elif thing in self.basic_items:
-					kwargs[commandset] = getattr(file_import,commandset)
-		print(kwargs )
-		print(kwargs_functions)
-		print(kwargs_loose_dicts)
+				kwargs[commandset] = getattr(file_import, commandset)
+		#kwargs done
+		if len(kwargs) > 0:
+			new_command_set = CommandSet()
+			new_command_set.add_commands(kwargs)
+			command_pool['test'] = new_command_set
+		#print(kwargs )
+		for function_name,function_object in kwargs_functions.items():
+			new_command_set = CommandSet()
+			setattr(new_command_set,function_name,function_object)
+			command_pool[function_name] = new_command_set
+			kwargs = command_pool
+			new_command_set.add_commands(kwargs)
+		for each in command_pool:
+			print(each)
+			for thing in dir(each):
+				print(thing)
+		# {'function_test_function1': <function function_test_function1>, 'function_test_function2': <function function_test_function2 >}
+		#print(kwargs_loose_dicts)
+		# now convert everything to wkargs for commandset
+		#
+		#return new_command_set
+		
 	###################################################################################
 	## Dynamic imports
 	###################################################################################
@@ -74,6 +80,7 @@ Goes running after commands
 		''' 
 		command_files_name 	= 'command_set.' + module_to_import
 		imported_file		= import_module(command_files_name)#, package='pybashy')
+		self.get_functions(imported_file)
 		#kwargs = self.get_functions(imported_file)
 		#new_command_set = CommandSet(kwargs)
 		#return new_command_set
