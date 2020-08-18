@@ -28,9 +28,11 @@
 ################################################################################
 
 """
-This is a test of the command framework
+This is a more advanced example of the command framework
+ - you can use code inside the function to modify information
+	before applying the script
 
-It will do some disk operations necessary for usb live installs
+This file will do some disk operations necessary for usb live installs
 
 """
 __author__ = 'Adam Galindo'
@@ -109,7 +111,7 @@ def function_install_syslinux_liveusb(self, livedisk_hw_name, live_disk_dir, fil
 					 ["rmdir {} {} {} {}".format(efi_dir, live_disk_dir ,persistance_dir, file_source_dir) , 
 					"",""]
 				}
-
+	info_message	= "[+] Installing Syslinux"
 	success_message = "[+] Syslinux Installed!"
 	failure_message = "[-]Syslinux Install Failed! Check the logfile!"
 
