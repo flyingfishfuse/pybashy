@@ -2,8 +2,8 @@ import os
 import pkgutil
 from importlib import import_module
 
-from commandset import CommandSet
-from useful_functions import greenprint,yellow_bold_print,redprint
+from pybashy.commandset import CommandSet
+from pybashy.useful_functions import greenprint,yellow_bold_print,redprint
 class CommandRunner:
 	'''
 NARF!
@@ -20,7 +20,7 @@ Goes running after commands
 	Lists modules in command_set directory
 		'''
 		list_of_modules = []
-		command_files_dir = os.path.dirname(__file__) + "/command_set"		
+		command_files_dir = os.path.dirname(__file__) + "/commandset"		
 		list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
 		for x in list_of_subfiles:
 			print(x.name)
@@ -79,7 +79,7 @@ Goes running after commands
 			thing = class.dynamic_import('name_of_file')
 			returns a CommandSet()
 		''' 
-		command_files_name 	= 'command_set.' + module_to_import
+		command_files_name 	= 'pybashy.libraries.' + module_to_import
 		imported_file		= import_module(command_files_name)#, package='pybashy')
 		command_pool_dict = self.get_functions(imported_file)
 		return command_pool_dict

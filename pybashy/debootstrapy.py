@@ -47,7 +47,7 @@ import argparse
 import subprocess
 import configparser
 
-import pybash
+import pybashy
 
 __author__ = 'Adam Galindo'
 __email__ = 'null@null.com'

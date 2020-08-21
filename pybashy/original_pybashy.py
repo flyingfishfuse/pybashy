@@ -43,60 +43,64 @@ __author__ 	= 'Adam Galindo'
 __email__ 	= 'null@null.com'
 __version__ = '1'
 __license__ = 'GPLv3'
-
-# the things allowed/expected in a module
-basic_items = ['steps','success_message', 'failure_message', 'info_message']
+__package__ = 'pybashy'
+#prevent loading on import, if this framework is incorporated into another
+if __name__ == "__main__":
+	# the things allowed/expected in a module
+	basic_items = ['steps','success_message', 'failure_message', 'info_message']
 ###################################################################################
 # Basic imports required for operation
 ###################################################################################
-import os
-import sys
-import inspect
-import argparse
-import threading
-import configparser
+	import os
+	import sys
+	import inspect
+	import argparse
+	import threading
+	import configparser
 
-#import the framework
-from pybashy.useful_functions import *
-from pybashy.commandset import CommandSet
-from pybashy.stepper import Stepper
-from pybashy.commandrunner import CommandRunner
-#####################################################################################################################################################################
-# Commandline Arguments
-###################################################################################
-# If the user is running the program as a script we parse the arguments or use the 
-# config file. 
-# If the user is importing this as a module for usage as a command framework we do
-# not activate the argument or configuration file parsing engines
-parser = argparse.ArgumentParser(description='python based, bash task execution manager')
-parser.add_argument('--testing',
-							 dest		= 'testing',
-							 action		= "store_true" ,
-							 help		= 'will run a series of tests, testing modules not supported yet' )
-parser.add_argument('--use-config',
-							 dest		= 'config_file',
-							 action		= "store_true" ,
-							 help		= 'Use config file, if used, will ignore other options' )
-parser.add_argument('--config-filename',
-							 dest		= 'config_filename',
-							 action		= "store" ,
-							 help		= 'Name of the config file' )
-parser.add_argument('--execute-module',
-							 dest		= 'dynamic_import',
-							 action		= "store_true" ,
-							 help		= 'Will execute user created module if used, will ignore config options ' )
-parser.add_argument('--module-name',
-							 dest		= 'dynamic_import_name',
-							 action		= "store" ,
-							 help		= 'Name of module to load' )
+	#import the framework
+	
+	from pybashy.useful_functions import *
+	from pybashy.stepper import Stepper
+	from pybashy.commandrunner import CommandRunner
 
-class CommandPool():
+	#####################################################################################################################################################################
+	# Commandline Arguments
+	###################################################################################
+	# If the user is running the program as a script we parse the arguments or use the 
+	# config file. 
+	# If the user is importing this as a module for usage as a command framework we do
+	# not activate the argument or configuration file parsing engines
+	parser = argparse.ArgumentParser(description='python based, bash task execution manager')
+	parser.add_argument('--testing',
+								 dest		= 'testing',
+								 action		= "store_true" ,
+								 help		= 'will run a series of tests, testing modules not supported yet' )
+	parser.add_argument('--use-config',
+								 dest		= 'config_file',
+								 action		= "store_true" ,
+								 help		= 'Use config file, if used, will ignore other options' )
+	parser.add_argument('--config-filename',
+								 dest		= 'config_filename',
+								 action		= "store" ,
+								 help		= 'Name of the config file' )
+	parser.add_argument('--execute-module',
+								 dest		= 'dynamic_import_bool',
+								 action		= "store_true" ,
+								 help		= 'Will execute user created module if used, will ignore config options ' )
+	parser.add_argument('--module-name',
+								 dest		= 'dynamic_import_name',
+								 action		= "store" ,
+								 help		= 'Name of module to load' )
+
+class Spider():
 	'''
-This is the command pool threading class, a container I guess?
+This is the threading class, a container I guess?
 I dunno, I change things fast and loose
 	'''
-	def __init__(self):
-		pass
+	def __init__(self,kwargs):
+		for (k, v) in kwargs.items():
+			setattr(self, k, v)
 
 	def threader(self, thread_function, name):
 		info_message("Thread {}: starting".format(name))
@@ -104,27 +108,46 @@ I dunno, I change things fast and loose
 		thread.start()
 		info_message("Thread {}: finishing".format(name))
 
-	def add_attributes_kwargs(self, kwargs):
-		for (k, v) in kwargs.items():
-			setattr(self, k, v)
 
+
+#meta class for loading the command sets into
+class CommandSet():
+	'''
+	Basic structure of the command set execution pool
+	feed it kwargs
+	then feed it to the STEPPER
+	'''
+	def __new__(cls, clsname, bases, clsdict):
+		return super().__new__(cls, clsname, bases, clsdict)
+	
+	def __init__(self, kwargs):
+		self.steps = dict
+		self.info_message	 = str
+		self.success_message = str
+		self.failure_message = str
+		#attempt to assign everything
+		#['steps','success_message', 'failure_message']
+		try:
+			for (key, value) in kwargs.items():
+				if key in basic_items:
+					setattr(self, key, value)
+				elif key.startswith('function'):
+					setattr(self, key, value)
+				else:
+					raise KeyError(str(key))
+		except Exception as derp:
+			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
 
 if __name__ == "__main__":
 
 	def execute_test():
-			#asdf = Stepper()
-			#asdf.step_test(asdf.example)
-			#asdf.step_test(asdf.example2)
+			asdf = Stepper()
+			asdf.step_test(asdf.example)
+			asdf.step_test(asdf.example2)
 			new_command = CommandRunner()
 			new_stepper = Stepper()
-			new_command_pool = new_command.dynamic_import('commandtest')
-			for command_name,command_set_object in new_command_pool.items():
-				for thing_name in dir(command_set_object):
-					print(command_name)
-					if thing_name.startswith('__') != True:
-						yellow_bold_print(thing_name)
-			
-			#finished_task = new_stepper.worker_bee(new_command_set_class,)
+			new_command_set_class = new_command.dynamic_import('commandtest')
+			finished_task = new_stepper.worker_bee(new_command_set_class)
 
 	def load_modules():
 		module_pool = {}
@@ -173,5 +196,4 @@ if __name__ == "__main__":
  	#loading a specialized module
 	elif arguments.config_file == False and (arguments.dynamic_import == True):
 		new_command = CommandRunner()
-		new_command_pool = new_command.dynamic_import(arguments.dynamic_import_name)
-
+		new_command_set_class = new_command.dynamic_import(arguments.dynamic_import_name)

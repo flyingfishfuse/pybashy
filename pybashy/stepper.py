@@ -1,8 +1,10 @@
+
+import sys
 import subprocess
 from pathlib import Path
-from useful_functions import info_message,error_message,yellow_bold_print,critical_message
-import sys
-from commandset import ExecutionPool
+from pybashy.commandset import ExecutionPool
+from pybashy.useful_functions import info_message,error_message,yellow_bold_print,critical_message
+
 class Stepper:
 #getattr, setattr and self.__dict__
 	'''

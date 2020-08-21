@@ -1,3 +1,5 @@
+import subprocess
+
 basic_items = ['steps','success_message', 'failure_message', 'info_message']
 #meta class for loading the command sets into
 class ExecutionPool():
