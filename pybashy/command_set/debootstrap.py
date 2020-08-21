@@ -31,8 +31,27 @@
 This is a test of the command framework
 
 This performs the steps necessary to debootstrap a new
-Debian/Ubuntu/Mint installation for use as a sandbox
+Debian/Ubuntu/Mint/PopOS installation for use as a sandbox
 or new OS install.
+
+TODO:
+	Download:
+		-PopOS Hybrid ISO
+
+	Unpack:
+		- PopOS filesystem.squashfs
+
+	Overlay:
+		- PopOS filesystem over Ubuntu of same release version
+
+	Mount:
+		- /boot/efi 
+			add UUID to fstab, mount before chroot
+			
+	Create:
+		- /etc/fstab
+		- /etc/resolvconf entries
+		- stuff
 
 """
 import os
@@ -46,13 +65,38 @@ __license__ = 'GPLv3'
 class Debootstrap:
 	'''
 	Does disk stuff
-	'''
-	def __init__(self, kwargs):
-		#for (k, v) in kwargs.items():
-		#	setattr(self, k, v)
-		pass
+	pass True to "active" to set it to perform the task on init
 
-	def stage1(self, arch, sandy_path, components, repository):
+	'''
+	def __init__(self, components,arch,sandy_path,repository, user,password,extras, active = False):
+		self.active = active
+		self.components = components
+		self.arch = arch
+		self.sandy_path = sandy_path
+		self.repository = repository
+		self.user = user
+		self.password = password
+		self.extras = extras
+		#running on init
+		if getattr(self, 'active') == True:
+			self.do_it_all()
+
+
+	def do_it_all(self):
+		self.debootstrap_action(self.components,self.arch,self.sandy_path,self.repository)
+		self.stage1(self.components,self.arch,self.sandy_path,self.repository,self.user,self.password,self.extras)
+		self.chroot_staging(self.sandy_path)
+		self.stage2(self.sandy_path, self.user, self.password, self.extras)
+
+	def debootstrap_action(self, components,arch,sandy_path,repository):
+		steps = {
+				 'debootstrap' : ["sudo debootstrap --components {} --arch {} , bionic {} {}".format(components,arch,sandy_path,repository),
+				 "[+] Beginning Debootstrap",
+				 "[+] Debootstrap Finished Successfully!",
+				 "[-]Debootstrap Failed! Check the logfile!"]
+				}
+		
+	def stage1(self, components,arch,sandy_path,repository, user, password, extras):
 		'''
 	Stage 1 :
 		- sets up base files/directory's
@@ -62,33 +106,28 @@ class Debootstrap:
 			* /dev, /proc, /sys
 			'''
 		# Sequential commands
-		"[+] Beginning Debootstrap"
-		steps = {[ 'debootstrap_actual' : "sudo debootstrap --components {} --arch {} , bionic {} {}".format(components,arch,sandy_path,repository),
-		"[+] Debootstrap Finished Successfully!",
-		"[-]Debootstrap Failed! Check the logfile!"]
-		}
-		#resolv.conf copy
-		"[+] Copying Resolv.conf"
-		"sudo cp /etc/resolv.conf {}/etc/resolv.conf".format(sandy_path)
-		"[+] Resolv.conf copied!"
-		"[-]Copying Resolv.conf Failed! Check the logfile!"
+		steps = {
+			'copy_resolvconf':["sudo cp /etc/resolv.conf {}/etc/resolv.conf".format(sandy_path),
+			"[+] Copying Resolv.conf",
+			"[+] Resolv.conf copied!",
+			"[-]Copying Resolv.conf Failed! Check the logfile!"],
+			'copy_sourceslist':["sudo cp /etc/apt/sources.list {}/etc/apt/".format(sandy_path)],
+			"[+] Copying Sources.list",
+			"[+] Sources.list copied!",
+			"[-]Copying Sources.list Failed! Check the logfile!"]
+			}
+		
 
-		# sources.list copy
-		"[+] Copying Sources.list"
-		["sudo cp /etc/apt/sources.list {}/etc/apt/".format(sandy_path)]
-		"[+] Sources.list copied!"
-		"[-]Copying Sources.list Failed! Check the logfile!"
-
+	def chroot_staging(sandy_path):
+		'''
+	used in stage2()
+		'''
 		#mount and bind the proper volumes
-		# /dev
-		"[+] Mounting /dev" 
-		["sudo mount -o bind /dev {}/dev".format(sandy_path)]
-		"[+] Mounted!"
-		"[-]Mounting /dev Failed! Check the logfile!"
-		# /proc
-		"[+] Mounting /proc"
-		["sudo mount -o bind -t proc /proc {}/proc".format(sandy_path)]
-		["sudo mount -o bind -t sys /sys {}/sys".format(sandy_path)]
+		steps = {
+				['mount_dev' : "sudo mount -o bind /dev {}/dev".format(sandy_path),"[+] Mounting /dev" "[+] Mounted!", "[-]Mounting /dev Failed! Check the logfile!"],
+				['mount_proc' : "sudo mount -o bind -t proc /proc {}/proc".format(sandy_path),"[+] Mounting /proc", "",""],
+				['mount_sys' : "sudo mount -o bind -t sys /sys {}/sys".format(sandy_path),"[+] Mounting /sys", "",""]
+				}
 
 	def stage2(self, sandy_path, user, password, extras):
 		'''
@@ -96,7 +135,7 @@ class Debootstrap:
 		- sets username / password
 
 		- LOG'S IN, DONT LEAVE THE COMPUTER
-			-for security purposes
+			-for security/data entry purposes
 
 		- updates packages
 		- installs debconf, nano, curl
@@ -132,3 +171,9 @@ class Debootstrap:
 				# sudo -S apt-get install locales dialog
 				# sudo -S locale-gen en_US.UTF-8  # or your preferred locale
 				# tzselect; TZ='Continent/Country'; export TZ  #Congure and use our local time instead of UTC; save in .prole
+ ...
+update-initramfs: Generating /boot/initrd.img-5.4.0-7634-generic
+kernelstub.Config    : INFO     Looking for configuration...
+kernelstub           : WARNING  Live mode is enabled!
+Kernelstub is running in live environment mode. This usually means that you are running a live disk, and kernelstub should not run. We are thus exiting with 0.
+If you are not running a live disk, please run `sudo kernelstub` to disable live mode.

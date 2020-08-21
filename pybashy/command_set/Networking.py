@@ -54,6 +54,27 @@ apt_install = { 'apt_install' 	: ["sudo -S apt install {}".format(packages),
 					'success_message'	: "[+] 	Sucessful!",
 					'failure_message'	: "[-] 	Failure!"]
 				}
+
+def auto_iface_manual():
+	payload = '''
+#auto eth0
+iface eth0 inet manual
+'''
+
+def interface_prototype():
+	payload = '''
+auto br0
+iface br0 inet dhcp
+pre-up ip tuntap add dev tap0 mode tap user <username>
+pre-up ip link set tap0 up
+bridge_ports all tap0
+bridge_stp off
+bridge_maxwait 0
+bridge_fd      0
+post-down ip link set tap0 down
+post-down ip tuntap del dev tap0 mode tap
+'''
+
 #Makes an interface with iproute1
 create_dummy_interface1 = { 'modprobe_dummy'		: ["sudo -S modprobe dummy",
 								'info_message'		: "[+] Informational Text!",
