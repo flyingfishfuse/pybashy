@@ -8,7 +8,7 @@ from pybashy.useful_functions import info_message,error_message,yellow_bold_prin
 class Stepper:
 #getattr, setattr and self.__dict__
 	'''
-Steps through the command list
+Steps through the command
 	'''
 	def __init__(self):
 		self.script_cwd		   	= Path().absolute()

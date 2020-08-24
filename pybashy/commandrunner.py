@@ -44,14 +44,12 @@ Goes running after commands
 					#assign function to value
 					kwargs_functions[thing_name] = getattr(file_import, thing_name)
 				#everything_name else not internal to the import class
-				
 				else:
 					print(thing_name)
+					#assign the thing, with the name, to kwargs
 					kwargs[thing_name] = getattr(file_import, thing_name)
-
 				#if thing_name not in self.basic_items:
 				#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
-				
 		#kwargs done
 		if len(kwargs) > 0:
 			new_command_set = CommandSet(kwargs)
