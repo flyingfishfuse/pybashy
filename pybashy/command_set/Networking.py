@@ -97,17 +97,17 @@ create_dummy_interface1 = { 'create_dummy_interface' : ["ip link add {} type vet
 							}
 
 remove_dummy_interface = { 'remove_dummy_device' : ["sudo -S ip addr del {} brd + dev {}".format(sandy_ip,sandy_netmask,sandy_iface)],
-						'info_message'		: "[+] Informational Text!",
-						'success_message'	: "[+] 	Sucessful!",
-						'failure_message'	: "[-] 	Failure!"],
+								'info_message'		: "[+] Informational Text!",
+								'success_message'	: "[+] 	Sucessful!",
+								'failure_message'	: "[-] 	Failure!"],
 					  'delete_dummy_interface'   : [ "sudo -S ip link delete {} type dummy".format(sandy_iface)],
-						'info_message'		: "[+] Informational Text!",
-						'success_message'	: "[+] 	Sucessful!",
-						'failure_message'	: "[-] 	Failure!"],
+								'info_message'		: "[+] Informational Text!",
+								'success_message'	: "[+] 	Sucessful!",
+								'failure_message'	: "[-] 	Failure!"],
 					  'remove_dummy_module	' 	 : [ "sudo -S rmmod dummy".format(),
-						'info_message'		: "[+] Informational Text!",
-						'success_message'	: "[+] 	Sucessful!",
-						'failure_message'	: "[-] 	Failure!"]
+								'info_message'		: "[+] Informational Text!",
+								'success_message'	: "[+] 	Sucessful!",
+								'failure_message'	: "[-] 	Failure!"]
 
 			}
 #Deletes the SANDBOX Interface

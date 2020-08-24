@@ -35,9 +35,20 @@ This is a most basic example of the command framework
 		new_command = CommandRunner()
 		new_command.dynamic_import('commandtest')
 
+	- All functions become thier own Command()
+		>>> isinstance(new_command, Command())
+		>>> True
+	
+	- All Command() are added to ExecutionPool()
+
+	- To Retrieve a list of loaded Command() and thier operations, use:
+		- ExecutionPool.list_operations(new_command) 
+		- ExecutionPool.list_commands()
+
 	- to run the execution pool, you use the worker_bee() function:
 
-		finished_command = new_command.worker_bee()
+		finished_command = new_command.worker_bee(ExecutionPool(command))
+
 
 Every command is a dict with an array of four string fields as the value:
 	
@@ -64,7 +75,8 @@ __email__ = 'null@null.com'
 __version__ = '1'
 __license__ = 'GPLv3'
 
-# only one set like this allowed
+# only one set like this allowed, I guess this would be used for setup operations 
+# and teardown staging
 steps = { 'ls_user' : ["ls -la ~/", "[+] Info Text",
 									"[+] Command Sucessful", 
 									"[-] Command Failed! Check the logfile!"],
@@ -104,8 +116,11 @@ def function_test_function1(params):
 			   								"[+] Command Sucessful", 
 											"[-] ls -la Failed! Check the logfile!"]
 			}
+	# This displays as the command is about to run
 	info_message	= "[+] Informational Text!"
+	# herp
 	success_message = "[+] Test Sucessful!"
+	# a derp
 	failure_message = "[-] Test Failure!"
 
 def function_test_function2(params):
@@ -113,10 +128,10 @@ def function_test_function2(params):
 				'ls_user' : ["ls -la ~/", "[+] Info Text",
 										"[+] Command Sucessful", 
 										"[-] Command Failed! Check the logfile!"],
-			   'ls_root' : ["ls -la /", "[+] Info Text",
+			    'ls_root' : ["ls -la /", "[+] Info Text",
 			   							"[+] Command Sucessful!",
 										"[-] Command Failed! Check the logfile!"],
-			   'ls_etc'  : ["ls -la /etc","[+] Info Text",
+			    'ls_etc'  : ["ls -la /etc","[+] Info Text",
 			   							"[+] Command Sucessful",
 										"[-] ls -la Failed! Check the logfile!"]
 			}
