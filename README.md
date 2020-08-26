@@ -42,7 +42,7 @@ This would run the entire module, assuming the module was coded to perform that 
 Example `loader.py` code:
 	
 	exec_pool   = ExecutionPool()
-	exec_pool(CommandRunner().dynamic_import('commandtest'))
+	exec_pool.new_command_set(CommandRunner().dynamic_import('commandtest'))
 	
 	# run function
 	finished_command = exec_pool.worker_bee('commandtest' , "function_test_function1")
