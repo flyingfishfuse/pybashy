@@ -14,8 +14,15 @@ basic_items = ['steps','success_message', 'failure_message', 'info_message']
 ###############################################################################
 ###############################################################################
 class Command:
-	def __init__(self,command):
-		self.command = dict
+	def __init__(self,command: dict):
+		self.command = command
+		for key,value in self.command.items():
+			setattr(self, key, value)
+			self.__name__ = key
+	
+	def __repr__():
+		print(self.__name__)
+
 
 
 ###############################################################################
@@ -40,16 +47,10 @@ class CommandSet():
 	#def __new__(cls, clsname, bases, clsdict):
 	#	return super().__new__(cls, clsname, bases, clsdict)
 	def __init__(self, kwargs):
-		self.steps   = dict
-
-		try:
-			for (key, value) in kwargs.items():
-				#if key in basic_items or (key.startswith('function')):
-				setattr(self, key, value)
-					#else:
-						#raise KeyError(str(key))
-		except Exception as derp:
-			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
+		self.steps   	  = dict
+		self.command_list = []
+		#if key in basic_items or (key.startswith('function')):
+		self.command_list.append(Command(**kwargs))
 
 	def run_command(self, command):
 		for key, value in self.steps.items():
@@ -62,6 +63,11 @@ class CommandSet():
 		print(derp.with_traceback)
 		#sys.exit()	
 	
+	def add_command(self, kwargs):
+		'''
+This is a future method to add commands from the terminal
+		'''
+		self.command_list.append(Command(**kwargs))
 
 ###############################################################################
 ###############################################################################
@@ -83,26 +89,6 @@ class ExecutionPool():
 		error_message(message = message)
 		print(derp.with_traceback)
 		sys.exit()	
-	
-	def step_test(self, dict_of_commands : dict):
-		'''
-	edit this and propogate changes to self.step() to reflect changes in 
-	modules
-		'''
-		try:
-			for instruction in self.example.values(), self.example2.values():
-				cmd 	= instruction[0]
-				info    = instruction[1]
-				success = instruction[2]
-				fail 	= instruction[3]
-				self.current_command = cmd
-				cmd_exec = self.exec_command(self.current_command)
-				if cmd_exec.returncode == 1 :
-					info_message(success)
-				else:
-					error_message(fail)
-		except Exception as derp:
-			return derp
 
 	def step(self, dict_of_commands : dict):
 		try:
@@ -212,6 +198,10 @@ class ExecutionPool():
 	def add_attributes_kwargs(self, kwargs):
 		for (k, v) in kwargs.items():
 			setattr(self, k, v)
+	
+	def new_command_set(self, command_set: CommandSet):
+		pass
+
 
 ###############################################################################
 ###############################################################################
@@ -243,28 +233,29 @@ Goes running after commands
 		kwargs_functions 	= {}
 		command_pool        = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
-		for thing_name in dir(file_import):
-			if thing_name.startswith('__') != True:
-				if thing_name.startswith('function'):
-					kwargs_functions[thing_name] = getattr(file_import, thing_name)
-				else:
-					print(thing_name)
-					kwargs[thing_name] = getattr(file_import, thing_name)
-				#if thing_name not in basic_items:
-				#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
-		#kwargs done
-		if len(kwargs) > 0:
-			#TODO: gotta find the right name and set it
-			command_pool[file_import.__name__] = CommandSet(**kwargs)
-		
-		for function_name,function_object in kwargs_functions.items():
-			new_command_set = CommandSet(**kwargs)
-			setattr(new_command_set,function_name,function_object)
-			
-			command_pool[function_name] = new_command_set
+		try:
+			for thing_name in dir(file_import):
+				if thing_name.startswith('__') != True:
+					if thing_name.startswith('function'):
+						kwargs_functions[thing_name] = getattr(file_import, thing_name)
+					else:
+						print(thing_name)
+						kwargs[thing_name] = getattr(file_import, thing_name)
+					#if thing_name not in basic_items:
+					#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
+			#kwargs done
+			if len(kwargs) > 0:
+				#TODO: gotta find the right name and set it
+				command_pool[file_import.__name__] = CommandSet(**kwargs)
+			for function_name,function_object in kwargs_functions.items():
+				new_command_set = CommandSet(**kwargs)
+				setattr(new_command_set,function_name,function_object)
+				command_pool[function_name] = new_command_set
+			return command_pool
 
-		return command_pool
-		
+		except Exception as derp:
+			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
+
 	###################################################################################
 	## Dynamic imports
 	###################################################################################

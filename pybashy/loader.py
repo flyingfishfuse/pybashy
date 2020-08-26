@@ -51,10 +51,12 @@ import threading
 import configparser
 
 #import the framework
-from pybashy.useful_functions import *
-from pybashy.commandset import CommandSet
-from pybashy.stepper import Stepper
+from pybashy.commandrunner import CommandSet
 from pybashy.commandrunner import CommandRunner
+from pybashy.commandrunner import ExecutionPool
+from pybashy.useful_functions import error_message
+from pybashy.useful_functions import greenprint,yellow_bold_print,redprint
+from pybashy.useful_functions import info_message,warning_message,critical_message
 #####################################################################################################################################################################
 # Commandline Arguments
 ###################################################################################
@@ -91,10 +93,9 @@ if __name__ == "__main__":
 			#asdf = Stepper()
 			#asdf.step_test(asdf.example)
 			#asdf.step_test(asdf.example2)
-			new_command = CommandRunner()
-			new_stepper = Stepper()
-			new_command_pool = new_command.dynamic_import('commandtest')
-			for command_name,command_set_object in new_command_pool.items():
+			exec_pool   = ExecutionPool()
+			exec_pool(CommandRunner().dynamic_import('commandtest'))
+			for command_name,command_set_object in exec_pool.items():
 				for thing_name in dir(command_set_object):
 					print(command_name)
 					if thing_name.startswith('__') != True:
