@@ -27,16 +27,10 @@
 ####
 ################################################################################
 """
-debootstrapy:
+TODO: build up the execution pool class ya daft loon!
+its in commandrunner.py now
 	- infrastructure that allows for running bash scripts with python
- 
-	- python based linux tool for using debootstrap to make a networked
-		debian based, sandbox OR a live-usb image with persistance
-		Using only basic debian/linux/gnu tools
 
-	currently, only a single os live-usb is supported
-	
-	config file must be named "debootstrapy.config" and be in the same directory
 
 """
 __author__ 	= 'Adam Galindo'
@@ -89,24 +83,6 @@ parser.add_argument('--module-name',
 							 dest		= 'dynamic_import_name',
 							 action		= "store" ,
 							 help		= 'Name of module to load' )
-
-class CommandPool():
-	'''
-This is the command pool threading class, a container I guess?
-I dunno, I change things fast and loose
-	'''
-	def __init__(self):
-		pass
-
-	def threader(self, thread_function, name):
-		info_message("Thread {}: starting".format(name))
-		thread = threading.Thread(target=thread_function, args=(1,))
-		thread.start()
-		info_message("Thread {}: finishing".format(name))
-
-	def add_attributes_kwargs(self, kwargs):
-		for (k, v) in kwargs.items():
-			setattr(self, k, v)
 
 
 if __name__ == "__main__":
