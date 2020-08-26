@@ -35,13 +35,16 @@ This is a most basic example of the command framework
 		new_command = CommandRunner()
 		new_command.dynamic_import('commandtest')
 
-	- All functions become thier own Command()
-		>>> isinstance(new_command, Command())
+	- All functions become thier own CommandSet()
+		>>> isinstance(new_command, CommandSet())
 		>>> True
+		
+		- from "steps" to "failure_message" is considered a CommandSet()
+		- All "steps" are turned into Command() 's 
 	
-	- All Command() are added to ExecutionPool()
+	- All CommandSet() are added to ExecutionPool()
 
-	- To Retrieve a list of loaded Command() and thier operations, use:
+	- To Retrieve a list of loaded CommandSet() and thier operations, use:
 		- ExecutionPool.list_operations(new_command) 
 		- ExecutionPool.list_commands()
 
@@ -75,6 +78,8 @@ __email__ = 'null@null.com'
 __version__ = '1'
 __license__ = 'GPLv3'
 
+# from "steps" to "failure_message" 
+# is considered a CommandSet()
 # only one set like this allowed, I guess this would be used for setup operations 
 # and teardown staging
 steps = { 'ls_user' : ["ls -la ~/", "[+] Info Text",
@@ -104,6 +109,7 @@ apt_install = {
 test1 = {'test1' : ['ls -la ~/','info','pass','fail']}
 # functions MUST START with "function"
 # many of these allowed
+# the whole function is considered a CommandSet()
 def function_test_function1(params):
 	steps = { 
 				'ls_user' : ["ls -la ~/", 	"[+] Info Text",
