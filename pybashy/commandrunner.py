@@ -224,8 +224,7 @@ Goes running after commands
 	def __init__(self):#,kwargs):
 		#for (k, v) in kwargs.items():
 		#	setattr(self, k, v)
-		self.basic_items = ['steps','success_message', 'failure_message', 'info_message']
-		self.command_pool = ExecutionPool()
+		pass
 
 	def list_modules(self):
 		'''
@@ -239,15 +238,11 @@ Goes running after commands
 			list_of_modules.append(x.name)
 		return list_of_modules
 
-#apt_install = { 'apt_install' 	: ["sudo -S apt install {}".format(packages), 
-#					'info_message'		: "[+] Informational Text!",
-#					'success_message'	: "[+] 	Sucessful!",
-#					'failure_message'	: "[-] 	Failure!"]
-#				}
 	def get_functions(self, file_import):
 		kwargs 				= {}
 		kwargs_functions 	= {}
 		command_pool        = {}
+		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		for thing_name in dir(file_import):
 			if thing_name.startswith('__') != True:
 				if thing_name.startswith('function'):
@@ -255,7 +250,7 @@ Goes running after commands
 				else:
 					print(thing_name)
 					kwargs[thing_name] = getattr(file_import, thing_name)
-				#if thing_name not in self.basic_items:
+				#if thing_name not in basic_items:
 				#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
 		#kwargs done
 		if len(kwargs) > 0:
