@@ -10,22 +10,22 @@ except ImportError as derp:
 	print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE")
 	COLORMEQUALIFIED = False
 
-blueprint 			= lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
+blueprint          = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
 	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-greenprint 			= lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
+greenprint         = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
 	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-redprint 			= lambda text: print(Fore.RED + ' ' +  text + ' ' + \
+redprint           = lambda text: print(Fore.RED + ' ' +  text + ' ' + \
 	Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 # inline colorization for lambdas in a lambda
-makered				= lambda text: Fore.RED + ' ' +  text + ' ' + \
+makered	          = lambda text: Fore.RED + ' ' +  text + ' ' + \
 	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makegreen  			= lambda text: Fore.GREEN + ' ' +  text + ' ' + \
+makegreen         = lambda text: Fore.GREEN + ' ' +  text + ' ' + \
 	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeblue  			= lambda text: Fore.BLUE + ' ' +  text + ' ' + \
+makeblue          = lambda text: Fore.BLUE + ' ' +  text + ' ' + \
 	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeyellow 			= lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
+makeyellow        = lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
 	Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-yellow_bold_print 	= lambda text: print(Fore.YELLOW + Style.BRIGHT + \
+yellow_bold_print = lambda text: print(Fore.YELLOW + Style.BRIGHT + \
 	' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 
 log_file = '/tmp/logtest'
