@@ -47,36 +47,7 @@ from pybashy.useful_functions import greenprint,yellow_bold_print,redprint
 from pybashy.useful_functions import info_message,warning_message,critical_message
 from pybashy.useful_functions import error_message
 
-basic_items = ['steps','success_message', 'failure_message', 'info_message']
-
-###############################################################################
-###############################################################################
-class Command:
-	'''
-	This class hold each individual step
-	It is the direct translation of :
-		{'test1' : ['ls -la ~/','','','']}
-
-	'''
-	def __init__(self,command: dict):
-		self.command = command
-		self.cmd_line = str
-		self.info_message = str
-		self.success_message = str
-		self.failure_message = str
-		self.name = str
-
-		for key,value in self.command.items():
-			setattr(self, key, value)
-			self.__name__ = key
-	
-	def __repr__():
-		print(self.__name__)
-
-	def __name__(self):
-		return self.name
-
-
+basic_items = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 
 ###############################################################################
 ###############################################################################
@@ -130,7 +101,7 @@ class ExecutionPool():
 			#requesting a specific function_function
 			if pollen != '':
 				#filter out class stuff, we are searching for functions
-				for thing in dir(flower):
+				for thing in dir(flower) (if thing.startswith('__') != True):
 					if thing.startswith('function') and thing.endswith(pollen):
 						self.success_message = getattr(thing,'success_message')
 						self.failure_message = getattr(thing,'failure_message')
@@ -143,8 +114,7 @@ class ExecutionPool():
 							print(self.success_message)
 			# the user wants to run all functions in the class
 			else:
-				for thing in dir(flower):
-					if thing.startswith('__') != True:
+				for thing in dir(flower) (if thing.startswith('__') != True):
 						#if we imported a function, assign things properly
 						if thing.startswith('function'):
 							print(thing)
@@ -211,6 +181,31 @@ class ExecutionPool():
 	def new_command_set(self, command_set: CommandSet):
 		pass
 
+###############################################################################
+###############################################################################
+class Command:
+	'''
+	This class hold each individual step
+	It is the direct translation of :
+		{'test1' : ['ls -la ~/','','','']}
+
+	'''
+	def __init__(self,command: dict):
+		self.command = command
+		self.cmd_line = str
+		self.info_message = str
+		self.success_message = str
+		self.failure_message = str
+		self.name = str
+
+		for key,value in self.command.items():
+			setattr(self, key, value)
+			
+	def __repr__():
+		print(self.__name__)
+
+	def __name__(self):
+		return self.name
 
 ###############################################################################
 ###############################################################################
@@ -235,34 +230,30 @@ class CommandSet():
 	#	return super().__new__(cls, clsname, bases, clsdict)
 	def __init__(self): #, kwargs):
 		self.steps   	  = dict
-		#self.command_list = []
-		#if key in basic_items or (key.startswith('function')):
 		self.command_list = {}
+		self.__name__ = str
 
+	def error_exit(self, message : str, derp):
+		print(derp.with_traceback)
+	
+	def add_command(self, kwargs):
+		self.command_list.append(Command(**kwargs))
+	
 	def run_command(self, command):
-		for key, value in self.steps.items():
-			if key == command:
-				print(key,value)
-				Command(command)
+		#for key, value in self.steps.items():
+		pass
 
 	def split_to_commands(self, kwargs):
 		''' 
-		feed it a "steps" variable and it will split it to Command()
+		feed it a thing, split it to Command()'s
 
 		'''
-		for key, value in list(stuff.items()):
-			Command(command)
+		derp = {}
+		for thing, value in kwargs.items():
+			if thing == 'steps':
+				for step_name, action_set in value:
+					self.command_list[step_name] = Command({step_name : action_set})
 
-	def error_exit(self, message : str, derp):
-		#error_message(message = message)
-		print(derp.with_traceback)
-		#sys.exit()	
-	
-	def add_command(self, kwargs):
-		'''
-This is a future method to add commands from the terminal
-		'''
-		self.command_list.append(Command(**kwargs))
 
 ###############################################################################
 ###############################################################################
@@ -294,7 +285,7 @@ Goes running after commands
 		# because we want to expand later
 		kwargs 				= {}
 		kwargs_functions 	= {}
-		command_pool        = {}
+		execution_pool      = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		try:
 			for thing_name in dir(file_import):
@@ -306,38 +297,33 @@ Goes running after commands
 					# interpreter and all we have are "steps" and messages now
 					if thing_name.startswith('function'):
 						new_command_set = CommandSet()
-						#kwargs_functions[thing_name]           = getattr(file_import, thing_name)
-						kwargs_functions['__name__']           = getattr(file_import, thing_name)
-						kwargs_functions['steps']              = getattr(thing_name,'steps')
-						kwargs_functions['info_message']       = getattr(file_import, 'info_message')
-						kwargs_functions['success_message']    = getattr(file_import, 'success_message')
-						kwargs_functions['failure_message']    = getattr(file_import, 'failure_message')
+						function_internals_list = dir(getattr(file_import, thing_name))
+						for thing in basic_items:
+							kwargs_function[thing] = getattr(function_internals_list,thing)
 						new_command_set.split_to_commands(**kwargs_functions)
+						execution_pool[thing_name.strip('function_')] = new_command_set
+
 					# grabbing the top level steps
 					elif thing_name.startswith('steps'):
 						new_command_set = CommandSet()
-						kwargs[thing_name]           = getattr(file_import, thing_name)
-						kwargs['info_message']       = getattr(file_import, 'info_message')
-						kwargs['success_message']    = getattr(file_import, 'success_message')
-						kwargs['failure_message']    = getattr(file_import, 'failure_message')
-						#command_pool[file_import.__name__] = CommandSet(**kwargs)
+						for thing in basic_items:
+							kwargs[thing] = getattr(function_internals_list,thing)
 						new_command_set.split_to_commands(**kwargs)
-
+						execution_pool[new_command_set.__name__] = new_command_set
+						
 					else:
 						print(thing_name)
 						kwargs[thing_name] = getattr(file_import, thing_name)
 					#if thing_name not in basic_items:
 					#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
 
-			#kwargs done
-			if len(kwargs) > 0:
-				#TODO: gotta find the right name and set it
+			#if len(kwargs) > 0:
 				#command_pool[file_import.__name__] = CommandSet(**kwargs)
-			for function_name,function_object in kwargs_functions.items():
-				new_command_set = CommandSet(**kwargs)
-				setattr(new_command_set,function_name,function_object)
-				command_pool[function_name] = new_command_set
-			return command_pool
+			#for function_name,function_object in kwargs_functions.items():
+			#	new_command_set = CommandSet(**kwargs)
+			#	setattr(new_command_set,function_name,function_object)
+			#	command_pool[function_name] = new_command_set
+			return execution_pool
 
 		except Exception as derp:
 			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
