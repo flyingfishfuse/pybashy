@@ -1,3 +1,41 @@
+# -*- coding: utf-8 -*-
+################################################################################
+##                         pybashy - commandrunner.py                         ##
+################################################################################
+# Copyright (c) 2020 Adam Galindo                                             ##
+#                                                                             ##
+# Permission is hereby granted, free of charge, to any person obtaining a copy##
+# of this software and associated documentation files (the "Software"),to deal##
+# in the Software without restriction, including without limitation the rights##
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell   ##
+# copies of the Software, and to permit persons to whom the Software is       ##
+# furnished to do so, subject to the following conditions:                    ##
+#                                                                             ##
+# Licenced under GPLv3                                                        ##
+# https://www.gnu.org/licenses/gpl-3.0.en.html                                ##
+#                                                                             ##
+# The above copyright notice and this permission notice shall be included in  ##
+# all copies or substantial portions of the Software.                         ##
+#                                                                             ##
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  ##
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    ##
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE ##
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      ##
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,#
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN   ##
+# THE SOFTWARE.                                                               ##
+################################################################################
+"""
+TODO: build up the execution pool class ya daft loon!
+    - infrastructure that allows for running bash scripts with python
+
+
+"""
+__author__ 	= 'Adam Galindo'
+__email__ 	= 'null@null.com'
+__version__ = '1'
+__license__ = 'GPLv3'
+
 import os
 import sys
 import pkgutil
@@ -14,8 +52,20 @@ basic_items = ['steps','success_message', 'failure_message', 'info_message']
 ###############################################################################
 ###############################################################################
 class Command:
+	'''
+	This class hold each individual step
+	It is the direct translation of :
+		{'test1' : ['ls -la ~/','','','']}
+
+	'''
 	def __init__(self,command: dict):
 		self.command = command
+		self.cmd_line = str
+		self.info_message = str
+		self.success_message = str
+		self.failure_message = str
+		self.name = str
+
 		for key,value in self.command.items():
 			setattr(self, key, value)
 			self.__name__ = key
@@ -23,51 +73,10 @@ class Command:
 	def __repr__():
 		print(self.__name__)
 
+	def __name__(self):
+		return self.name
 
 
-###############################################################################
-###############################################################################
-class CommandSet():
-	'''
-	Basic structure of the command set execution pool
-	This is essentially the file/module loaded into a Class
-		- All the stuff at the top level of the scope 
-			- defs as thier name
-			- variables as thier name
-			- everything is considered an individual command 
-			  unless it matches a keyword like "steps"
-				- Those commands are turned into Command() 's 
-	
-		- feed it kwargs
-	
-		- put it in the execution pool
-	
-		- then feed it to the STEPPER
-	'''
-	#def __new__(cls, clsname, bases, clsdict):
-	#	return super().__new__(cls, clsname, bases, clsdict)
-	def __init__(self, kwargs):
-		self.steps   	  = dict
-		self.command_list = []
-		#if key in basic_items or (key.startswith('function')):
-		self.command_list.append(Command(**kwargs))
-
-	def run_command(self, command):
-		for key, value in self.steps.items():
-			if key == command:
-				print(key,value)
-				Command(command)
-
-	def error_exit(self, message : str, derp):
-		#error_message(message = message)
-		print(derp.with_traceback)
-		#sys.exit()	
-	
-	def add_command(self, kwargs):
-		'''
-This is a future method to add commands from the terminal
-		'''
-		self.command_list.append(Command(**kwargs))
 
 ###############################################################################
 ###############################################################################
@@ -205,6 +214,58 @@ class ExecutionPool():
 
 ###############################################################################
 ###############################################################################
+class CommandSet():
+	'''
+	Basic structure of the command set execution pool
+	This is essentially the file/module loaded into a Class
+		- All the stuff at the top level of the scope 
+			- defs as thier name
+			- variables as thier name
+			- everything is considered an individual command 
+			  unless it matches a keyword like "steps"
+				- Those commands are turned into Command() 's 
+	
+		- feed it kwargs
+	
+		- put it in the execution pool
+	
+		- then feed it to the STEPPER
+	'''
+	#def __new__(cls, clsname, bases, clsdict):
+	#	return super().__new__(cls, clsname, bases, clsdict)
+	def __init__(self): #, kwargs):
+		self.steps   	  = dict
+		#self.command_list = []
+		#if key in basic_items or (key.startswith('function')):
+		self.command_list = {}
+
+	def run_command(self, command):
+		for key, value in self.steps.items():
+			if key == command:
+				print(key,value)
+				Command(command)
+
+	def split_to_commands(self, kwargs):
+		''' 
+		feed it a "steps" variable and it will split it to Command()
+
+		'''
+		for key, value in list(stuff.items()):
+			Command(command)
+
+	def error_exit(self, message : str, derp):
+		#error_message(message = message)
+		print(derp.with_traceback)
+		#sys.exit()	
+	
+	def add_command(self, kwargs):
+		'''
+This is a future method to add commands from the terminal
+		'''
+		self.command_list.append(Command(**kwargs))
+
+###############################################################################
+###############################################################################
 
 class CommandRunner:
 	'''
@@ -223,30 +284,55 @@ Goes running after commands
 		list_of_modules = []
 		command_files_dir = os.path.dirname(__file__) + "/commandset"		
 		list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
-		for x in list_of_subfiles:
-			print(x.name)
-			list_of_modules.append(x.name)
+		for filez in list_of_subfiles:
+			print(filez.name)
+			list_of_modules.append(filez.name)
 		return list_of_modules
 
-	def get_functions(self, file_import):
+	def get_stuff(self, file_import):
+		# we are differentiating between functions and other stuff
+		# because we want to expand later
 		kwargs 				= {}
 		kwargs_functions 	= {}
 		command_pool        = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		try:
 			for thing_name in dir(file_import):
+				# we are filtering out internal stuff
+				# only draw from that when necessary
 				if thing_name.startswith('__') != True:
+					#grabbing the functions steps
+					# remember, everything has been preprocessed by the python
+					# interpreter and all we have are "steps" and messages now
 					if thing_name.startswith('function'):
-						kwargs_functions[thing_name] = getattr(file_import, thing_name)
+						new_command_set = CommandSet()
+						#kwargs_functions[thing_name]           = getattr(file_import, thing_name)
+						kwargs_functions['__name__']           = getattr(file_import, thing_name)
+						kwargs_functions['steps']              = getattr(thing_name,'steps')
+						kwargs_functions['info_message']       = getattr(file_import, 'info_message')
+						kwargs_functions['success_message']    = getattr(file_import, 'success_message')
+						kwargs_functions['failure_message']    = getattr(file_import, 'failure_message')
+						new_command_set.split_to_commands(**kwargs_functions)
+					# grabbing the top level steps
+					elif thing_name.startswith('steps'):
+						new_command_set = CommandSet()
+						kwargs[thing_name]           = getattr(file_import, thing_name)
+						kwargs['info_message']       = getattr(file_import, 'info_message')
+						kwargs['success_message']    = getattr(file_import, 'success_message')
+						kwargs['failure_message']    = getattr(file_import, 'failure_message')
+						#command_pool[file_import.__name__] = CommandSet(**kwargs)
+						new_command_set.split_to_commands(**kwargs)
+
 					else:
 						print(thing_name)
 						kwargs[thing_name] = getattr(file_import, thing_name)
 					#if thing_name not in basic_items:
 					#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
+
 			#kwargs done
 			if len(kwargs) > 0:
 				#TODO: gotta find the right name and set it
-				command_pool[file_import.__name__] = CommandSet(**kwargs)
+				#command_pool[file_import.__name__] = CommandSet(**kwargs)
 			for function_name,function_object in kwargs_functions.items():
 				new_command_set = CommandSet(**kwargs)
 				setattr(new_command_set,function_name,function_object)
