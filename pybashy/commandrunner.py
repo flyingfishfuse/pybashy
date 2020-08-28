@@ -279,17 +279,17 @@ class CommandRunner:
 NARF!
 Goes running after commands
 	'''
-	def __init__(self, import_thing):#,kwargs):
+	def __init__(self):#,kwargs):
 		#for (k, v) in kwargs.items():
 		#	setattr(self, k, v)
-		self.dynamic_import(import_thing)
+		pass
 
 	def get_stuff(self, file_import):
 		# we are differentiating between functions and other stuff
 		# because we want to expand later
 		kwargs 				= {}
 		kwargs_function 	= {}
-		execute_pool      = {}
+		execute_pool        = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		try:
 			for thing_name in dir(file_import):
