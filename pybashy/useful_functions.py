@@ -1,3 +1,4 @@
+import sys
 import logging 
 try:
 	import colorama
@@ -36,3 +37,8 @@ info_message		= lambda message: logger.info(greenprint(message))
 warning_message 	= lambda message: logger.warning(yellow_bold_print(message)) 
 error_message		= lambda message: logger.error(redprint(message)) 
 critical_message 	= lambda message: logger.critical(yellow_bold_print(message))
+
+def error_exit(self, message : str, derp : Exception):
+	error_message(message = message)
+	print(derp.with_traceback)
+	sys.exit()
