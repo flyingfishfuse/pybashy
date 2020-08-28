@@ -235,7 +235,7 @@ class CommandSet():
 	'''
 	#def __new__(cls, clsname, bases, clsdict):
 	#	return super().__new__(cls, clsname, bases, clsdict)
-	def __init__(self): #, kwargs):
+	def __init__(self, kwargs):
 		self.steps   	  = dict
 		self.command_list = {}
 		self.__name__     = str
@@ -279,29 +279,17 @@ class CommandRunner:
 NARF!
 Goes running after commands
 	'''
-	def __init__(self):#,kwargs):
+	def __init__(self, import_thing):#,kwargs):
 		#for (k, v) in kwargs.items():
 		#	setattr(self, k, v)
-		pass
-
-	def list_modules(self):
-		'''
-	Lists modules in command_set directory
-		'''
-		list_of_modules = []
-		command_files_dir = os.path.dirname(__file__) + "/commandset"		
-		list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
-		for filez in list_of_subfiles:
-			print(filez.name)
-			list_of_modules.append(filez.name)
-		return list_of_modules
+		self.dynamic_import(import_thing)
 
 	def get_stuff(self, file_import):
 		# we are differentiating between functions and other stuff
 		# because we want to expand later
 		kwargs 				= {}
 		kwargs_function 	= {}
-		execution_pool      = {}
+		execute_pool      = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		try:
 			for thing_name in dir(file_import):
@@ -312,37 +300,25 @@ Goes running after commands
 					# remember, everything has been preprocessed by the python
 					# interpreter and all we have are "steps" and messages now
 					if thing_name.startswith('function'):
-						new_command_set = CommandSet()
 						function_internals_list = dir(getattr(file_import, thing_name))
 						for thing in basic_items:
 							kwargs_function[thing] = getattr(function_internals_list,thing)
-						new_command_set.split_to_commands(**kwargs_function)
-						execution_pool[thing_name.strip('function_')] = new_command_set
-
-					# grabbing the top level steps
+						new_command_set = CommandSet(**kwargs_function)
+						execute_pool[thing_name.strip('function_')] = new_command_set
+					# grabbing top level steps
+					# along with the messages
 					elif thing_name.startswith('steps'):
-						new_command_set = CommandSet()
 						for thing in basic_items:
-							kwargs[thing] = getattr(function_internals_list,thing)
-						new_command_set.split_to_commands(**kwargs)
-						execution_pool[new_command_set.__name__] = new_command_set
-						
+							kwargs[thing] = getattr(file_import,thing)
+						new_command_set = CommandSet(**kwargs)
+						execute_pool[new_command_set.__name__] = new_command_set
 					else:
 						print(thing_name)
-						kwargs[thing_name] = getattr(file_import, thing_name)
-					#if thing_name not in basic_items:
-					#	kwargs_single_command[thing_name] = getattr(file_import, thing_name)
-
-			#if len(kwargs) > 0:
-				#command_pool[file_import.__name__] = CommandSet(**kwargs)
-			#for function_name,function_object in kwargs_functions.items():
-			#	new_command_set = CommandSet(**kwargs)
-			#	setattr(new_command_set,function_name,function_object)
-			#	command_pool[function_name] = new_command_set
-			return execution_pool
+						# kwargs[thing_name] = getattr(file_import, thing_name)
+			return execute_pool
 
 		except Exception as derp:
-			self.error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', derp)
+			error_exit('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', message = derp)
 
 	###################################################################################
 	## Dynamic imports
@@ -358,7 +334,7 @@ Goes running after commands
 		''' 
 		command_files_name 	= 'pybashy.libraries.' + module_to_import
 		imported_file		= import_module(command_files_name)#, package='pybashy')
-		command_pool_dict = self.get_functions(imported_file)
+		command_pool_dict   = self.get_stuff(imported_file)
 		return command_pool_dict
 		#kwargs = self.get_functions(imported_file)
 		#new_command_set = CommandSet(kwargs)
@@ -366,8 +342,3 @@ Goes running after commands
 
 ###############################################################################
 ###############################################################################
-#class Stepper:
-#getattr, setattr and self.__dict__
-#	'''
-#Steps through the command
-#	'''
