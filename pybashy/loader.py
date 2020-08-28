@@ -40,6 +40,7 @@ basic_items = ['steps','success_message', 'failure_message', 'info_message']
 ###################################################################################
 import os
 import sys
+import pkgutil
 import inspect
 import argparse
 import threading
@@ -110,6 +111,8 @@ if __name__ == "__main__":
 				execution_pool.command_set_dict[command_name] = command_set #
 			#################################################################
 			# printing the contents
+			command_set_class = execution_pool.command_set_dict.items[0]
+			task = execution_pool.worker_bee(command_set_class)
 			for name, thing in dir(execution_pool.command_set_dict.items):
 				yellow_bold_print(name)
 				yellow_bold_print(thing)
