@@ -38,6 +38,7 @@ __license__ = 'GPLv3'
 
 import os
 import sys
+import typing
 import pkgutil
 import threading
 import subprocess
@@ -45,10 +46,11 @@ from pathlib import Path
 from importlib import import_module
 from pybashy.useful_functions import greenprint,yellow_bold_print,redprint
 from pybashy.useful_functions import info_message,warning_message,critical_message
-from pybashy.useful_functions import error_message
+from pybashy.useful_functions import error_message, error_exit
 
-basic_items = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
-
+basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
+script_cwd   = Path().absolute()
+script_osdir = Path(__file__).parent.absolute()
 ###############################################################################
 ###############################################################################
 class ExecutionPool():
@@ -57,19 +59,8 @@ class ExecutionPool():
 	I dunno, I change things fast and loose
 	'''
 	def __init__(self):
-		pool = {'test_init': Command({'test1' : ['ls -la ~/','info','pass','fail']})}
-		self.script_cwd		   	= Path().absolute()
-		self.script_osdir	   	= Path(__file__).parent.absolute()
-		self.example  = {"ls_root" : ["ls -la /", "info", "[+] success message", "[-] failure message" ]}
-		self.example2 = {"ls_etc"  : ["ls -la /etc"	,'info', "[-] failure message", "[+] success message" ] ,
-		 	 			 "ls_home" : ["ls -la ~/", 'info', "[-] failure message", "[+] success message" ]}
-
-
-	def error_exit(self, message : str, derp : Exception):
-		error_message(message = message)
-		print(derp.with_traceback)
-		sys.exit()	
-
+		self.command_set_dict = {'test_init': Command({'test1' : ['ls -la ~/','info','pass','fail']})}
+	
 	def step(self, dict_of_commands : dict):
 		try:
 			for instruction in dict_of_commands.values():
@@ -101,20 +92,22 @@ class ExecutionPool():
 			#requesting a specific function_function
 			if pollen != '':
 				#filter out class stuff, we are searching for functions
-				for thing in dir(flower) (if thing.startswith('__') != True):
-					if thing.startswith('function') and thing.endswith(pollen):
-						self.success_message = getattr(thing,'success_message')
-						self.failure_message = getattr(thing,'failure_message')
-						self.info_message	 = getattr(thing,'info_message')
-						self.steps			 = getattr(thing,'steps')
-						stepper = self.step(self.steps)
-						if isinstance(stepper, Exception):
-							self.error_exit(self.failure_message, Exception)
-						else:
-							print(self.success_message)
+				for thing in dir(flower):
+					if thing.startswith('__') != True:
+						if thing.startswith('function') and thing.endswith(pollen):
+							self.success_message = getattr(thing,'success_message')
+							self.failure_message = getattr(thing,'failure_message')
+							self.info_message	 = getattr(thing,'info_message')
+							self.steps			 = getattr(thing,'steps')
+							stepper = self.step(self.steps)
+							if isinstance(stepper, Exception):
+								error_exit(self.failure_message, Exception)
+							else:
+								print(self.success_message)
 			# the user wants to run all functions in the class
 			else:
-				for thing in dir(flower) (if thing.startswith('__') != True):
+				for thing in dir(flower):
+					if thing.startswith('__') != True:
 						#if we imported a function, assign things properly
 						if thing.startswith('function'):
 							print(thing)
@@ -186,23 +179,37 @@ class ExecutionPool():
 class Command:
 	'''
 	This class hold each individual step
-	It is the direct translation of :
+	It is the direct translation/representation of :
 		{'test1' : ['ls -la ~/','','','']}
 
+	This is the bottom of the container chain
+	 - ExecutionPool() -> CommandSet() -> Command(command : dict)
 	'''
 	def __init__(self,command: dict):
-		self.command = command
-		self.cmd_line = str
-		self.info_message = str
-		self.success_message = str
-		self.failure_message = str
-		self.name = str
+		self.cmd_line           = str
+		self.info_message       = str
+		self.success_message    = str
+		self.failure_message    = str
+		self.name               = str
+		self.init_self(command)
 
-		for key,value in self.command.items():
-			setattr(self, key, value)
-			
-	def __repr__():
-		print(self.__name__)
+	def init_self(self,command: dict):
+		try:
+			for command_name, command_action_set in command.items():
+				self.name            = command_name
+				self.cmd_line        = command_action_set[0]
+				self.info_message    = command_action_set[1]
+				self.success_message = command_action_set[2]
+				self.failure_message = command_action_set[3]
+		except Exception as derp:
+			yellow_bold_print("[-] Instantiation of Command() Failed! One of these is not like the others!")
+			return derp
+
+	def __repr__(self):
+		greenprint("Command:")
+		print(self.name)
+		greenprint("Command String:")
+		print(self.cmd_line)
 
 	def __name__(self):
 		return self.name
@@ -224,31 +231,40 @@ class CommandSet():
 	
 		- put it in the execution pool
 	
-		- then feed it to the STEPPER
+		- then feed it to the BEEEEEE'S!
 	'''
 	#def __new__(cls, clsname, bases, clsdict):
 	#	return super().__new__(cls, clsname, bases, clsdict)
 	def __init__(self): #, kwargs):
 		self.steps   	  = dict
 		self.command_list = {}
-		self.__name__ = str
-
+		self.__name__     = str
+		self.info_message       = str
+		self.success_message    = str
+		self.failure_message    = str
+		for thing, value in kwargs.items():
+			if thing == 'steps':
+				for step_name, action_set in value:
+					new_command = Command({step_name : action_set})
+					self.command_list[step_name] = new_command
+	
 	def error_exit(self, message : str, derp):
 		print(derp.with_traceback)
 	
-	def add_command(self, kwargs):
-		self.command_list.append(Command(**kwargs))
-	
-	def run_command(self, command):
-		#for key, value in self.steps.items():
-		pass
+	def add_command(self, name, kwargs):
+		self.command_list[name] = (Command(**kwargs))
+
+	def list_commands(self):
+		for command in self.command_list:
+			print(command)
 
 	def split_to_commands(self, kwargs):
 		''' 
 		feed it a thing, split it to Command()'s
 
+		This method is for when you are adding steps : dict manually... 
+		perhaps over the network? >.> hmmmm
 		'''
-		derp = {}
 		for thing, value in kwargs.items():
 			if thing == 'steps':
 				for step_name, action_set in value:
@@ -284,7 +300,7 @@ Goes running after commands
 		# we are differentiating between functions and other stuff
 		# because we want to expand later
 		kwargs 				= {}
-		kwargs_functions 	= {}
+		kwargs_function 	= {}
 		execution_pool      = {}
 		#basic_items = ['steps','success_message', 'failure_message', 'info_message']
 		try:
@@ -300,7 +316,7 @@ Goes running after commands
 						function_internals_list = dir(getattr(file_import, thing_name))
 						for thing in basic_items:
 							kwargs_function[thing] = getattr(function_internals_list,thing)
-						new_command_set.split_to_commands(**kwargs_functions)
+						new_command_set.split_to_commands(**kwargs_function)
 						execution_pool[thing_name.strip('function_')] = new_command_set
 
 					# grabbing the top level steps
