@@ -1,84 +1,112 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-################################################################################
-##                         pybashy - usefuf_functions.py                      ##
-################################################################################
-# Copyright (c) 2020 Adam Galindo                                             ##
-#                                                                             ##
-# Permission is hereby granted, free of charge, to any person obtaining a copy##
-# of this software and associated documentation files (the "Software"),to deal##
-# in the Software without restriction, including without limitation the rights##
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell   ##
-# copies of the Software, and to permit persons to whom the Software is       ##
-# furnished to do so, subject to the following conditions:                    ##
-#                                                                             ##
-# Licenced under GPLv3                                                        ##
-# https://www.gnu.org/licenses/gpl-3.0.en.html                                ##
-#                                                                             ##
-# The above copyright notice and this permission notice shall be included in  ##
-# all copies or substantial portions of the Software.                         ##
-#                                                                             ##
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  ##
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    ##
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE ##
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      ##
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,#
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN   ##
-# THE SOFTWARE.                                                               ##
-################################################################################
 """
-BoilerPlate Galore!
- Here we have all the neat stuff you can just 
- import to add basic pro level functionality!
+This file contains: 
+    - Useful bits of code I use in all my projects
 
 """
-__author__     = 'Adam Galindo'
-__email__     = 'null@null.com'
-__version__ = '1'
+__author__  = 'Adam Galindo'
+__email__   = 'null@null.com'
+__version__ = '0.1A'
 __license__ = 'GPLv3'
 
+#currently controls color printing functions ONLY
+TESTING = True
+
+########################################
+# Imports for logging and colorization #
+########################################
 import sys
 import logging
-import threading
+import traceback
+
 try:
     import colorama
     from colorama import init
     init()
     from colorama import Fore, Back, Style
-    COLORMEQUALIFIED = True
+    if TESTING == True:
+        COLORMEQUALIFIED = True
 except ImportError as derp:
-    print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE")
+    print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE, Install the Colorama Package from pip")
     COLORMEQUALIFIED = False
 
-blueprint   = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-greenprint  = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-redprint    = lambda text: print(Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+##########################
+# Colorization Functions #
+##########################
+# yeah, about the slashes... do you want invisible \n? 
+# Because thats how you avoid invisible \n and concatenation errors
+blueprint             = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + \
+    Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+greenprint             = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + \
+    Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+redprint             = lambda text: print(Fore.RED + ' ' +  text + ' ' + \
+    Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 # inline colorization for lambdas in a lambda
-makered     = lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makegreen   = lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeblue    = lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeyellow  = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-yellow_bold_print     = lambda text: print(Fore.YELLOW + Style.BRIGHT + ' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+# lambing while you lamb?
+makered                = lambda text: Fore.RED + ' ' +  text + ' ' + \
+    Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+makegreen              = lambda text: Fore.GREEN + ' ' +  text + ' ' + \
+    Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+makeblue              = lambda text: Fore.BLUE + ' ' +  text + ' ' + \
+    Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+makeyellow             = lambda text: Fore.YELLOW + ' ' +  text + ' ' + \
+    Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+yellow_bold_print     = lambda text: print(Fore.YELLOW + Style.BRIGHT + \
+    ' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 
-log_file = '/tmp/logtest'
+###########
+# LOGGING #
+###########
+LOGLEVEL = 'DEV_IS_DUMB'
+LOGLEVELS = [1,2,3,'DEV_IS_DUMB']
+
+log_file  = 'garden_grid_message_log'
 logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s', filemode='w')
-logger                   = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-debug_message        = lambda message: logger.debug(blueprint(message)) 
-info_message        = lambda message: logger.info(greenprint(message)) 
-warning_message     = lambda message: logger.warning(yellow_bold_print(message)) 
-error_message        = lambda message: logger.error(redprint(message)) 
-critical_message     = lambda message: logger.critical(yellow_bold_print(message))
+logger    = logging.getLogger()
 
-def error_exit(self, message : str, derp : Exception):
-    error_message(message = message)
-    print(derp.with_traceback)
-    sys.exit()
 
-def threader(self, thread_function, name):
-	try:
-	    info_message("Thread {}: starting".format(name))
-    	thread = threading.Thread(target=thread_function, args=(1,))
-    	thread.start()
-    	info_message("Thread {}: finishing".format(name))
-	except Exception as derp:
-        return derp
+debug_message = lambda message: logger.debug(blueprint(message)) 
+info_message  = lambda message: logger.info(greenprint(message))   
+warning_message  = lambda message: logger.warning(yellow_bold_print(message)) 
+error_message    = lambda message: logger.error(redprint(message)) 
+critical_message = lambda message: logger.critical(yellow_bold_print(message))
+
+def error_printer(message):
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
+    if LOGLEVEL == 'DEV_IS_DUMB':
+        error_message( message + ''.join(trace.format_exception_only()))
+        traceback.format_list(trace.extract_tb(trace)[-1:])[-1]
+        debug_message('LINE NUMBER >>>' + str(exc_tb.tb_lineno))
+    else:
+        error_message(message + ''.join(trace.format_exception_only()))
+
+###############################################
+## BeautifulSoup4 
+#divs = soupyresults.find(lambda tag:  tag.name=='div' and tag.has_key('id') and tag['id'] == divname)
+
+################################################]
+## SQLALCHEMY
+#################################################
+wat = '''
+def check_if_plants_exist_bool(plant_name):
+    exists = PlantDatabase.session.query(Plants.id).filter_by(name=plant_name).first() is not None
+    if exists:
+        info_message()
+        return True
+    else:
+        return False
+        #hwhat the he-hockey stick hockey stick am I doing!?!?!?
+
+'''
+HWAT = '''
+def table_exists(engine,name):
+    try:
+        from sqlalchemy import inspect
+        blarf = inspect(engine).dialect.has_table(engine.connect(),name)
+        print('[+] Database Table {} EXISTS'.format(name, blarf))
+        #return blarf
+    except Exception:
+        error_printer("[-] TABLE {} does NOT EXIST!".format(name))
+'''
