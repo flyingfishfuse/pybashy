@@ -17,6 +17,8 @@ TESTING = True
 # Imports for logging and colorization #
 ########################################
 import sys
+import os,pkgutil
+import argparse
 import logging
 import traceback
 
@@ -30,6 +32,36 @@ try:
 except ImportError as derp:
     print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE, Install the Colorama Package from pip")
     COLORMEQUALIFIED = False
+
+####################################################################################
+# Commandline Arguments
+###################################################################################
+# If the user is running the program as a script we parse the arguments or use the 
+# config file. 
+# If the user is importing this as a module for usage as a command framework we do
+# not activate the argument or configuration file parsing engines
+parser = argparse.ArgumentParser(description='python based, bash task execution manager')
+
+parser.add_argument('--testing',
+                             dest    = 'testing',
+                             action  = "store_true" ,
+                             help    = 'will run a series of tests, testing modules not supported yet' )
+parser.add_argument('--use-config',
+                             dest    = 'config_file',
+                             action  = "store_true" ,
+                             help    = 'Use config file, if used, will ignore other options' )
+parser.add_argument('--config-filename',
+                             dest    = 'config_filename',
+                             action  = "store" ,
+                             help    = 'Name of the config file' )
+parser.add_argument('--execute-module',
+                             dest    = 'dynamic_import',
+                             action  = "store_true" ,
+                             help    = 'Will execute user created module if used, will ignore config options ' )
+parser.add_argument('--module-name',
+                             dest    = 'dynamic_import_name',
+                             action  = "store" ,
+                             help    = 'Name of module to load' )
 
 ##########################
 # Colorization Functions #
@@ -77,12 +109,27 @@ def error_printer(message):
     trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
     if LOGLEVEL == 'DEV_IS_DUMB':
         error_message( message + ''.join(trace.format_exception_only()))
-        traceback.format_list(trace.extract_tb(trace)[-1:])[-1]
+        try:
+            traceback.format_list(traceback.extract_tb(trace)[-1:])[-1]
+        except Exception:
+            error_message(trace.exc_traceback.tb_frame.f_code)
         debug_message('LINE NUMBER >>>' + str(exc_tb.tb_lineno))
     else:
         error_message(message + ''.join(trace.format_exception_only()))
 
+def list_modules():
+    '''
+Lists modules in command_set directory
+    '''
+    list_of_modules = []
+    command_files_dir = os.path.dirname(__file__) + "/commandset"        
+    list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
+    for filez in list_of_subfiles:
+        print(filez.name)
+        list_of_modules.append(filez.name)
+    return list_of_modules
 ###############################################
+
 ## BeautifulSoup4 
 #divs = soupyresults.find(lambda tag:  tag.name=='div' and tag.has_key('id') and tag['id'] == divname)
 

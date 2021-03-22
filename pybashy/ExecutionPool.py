@@ -2,9 +2,10 @@ import os
 import sys
 import subprocess
 from pathlib import Path
-from pybashy.useful_functions import *
+from pybashy.useful_functions import yellow_bold_print,info_message
+from pybashy.useful_functions import critical_message,error_printer
 import pybashy.CommandSet
-from pybashy.CommandSet import *
+from pybashy.CommandSet import CommandSet
 script_cwd   = Path().absolute()
 script_osdir = Path(__file__).parent.absolute()
 ###############################################################################

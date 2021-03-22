@@ -12,7 +12,7 @@ docstring = '''
         new_command.init_self(command_dict)
 '''
 
-from pybashy.useful_functions import *
+from pybashy.useful_functions import error_printer,greenprint
 
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 

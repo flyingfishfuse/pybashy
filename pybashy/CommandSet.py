@@ -11,8 +11,9 @@ docstring = '''
     
     
     '''
-from pybashy.Command import *
-
+import sys
+from pybashy.Command import Command
+from pybashy.useful_functions import error_printer
 class CommandSet():
     def __new__(cls):
         cls.__name__ = str

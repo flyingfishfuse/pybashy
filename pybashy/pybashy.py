@@ -27,7 +27,7 @@
 ####
 ################################################################################
 """
-This file contains the program options 
+This file waaaaaat
 
 """
 __author__     = 'Adam Galindo'
@@ -35,79 +35,36 @@ __email__     = 'null@null.com'
 __version__ = '1'
 __license__ = 'GPLv3'
 
-import pkgutil
+import os
 import inspect
-import argparse
 import configparser
-from pybashy.CommandRunner import *
-
-####################################################################################
-# Commandline Arguments
-###################################################################################
-# If the user is running the program as a script we parse the arguments or use the 
-# config file. 
-# If the user is importing this as a module for usage as a command framework we do
-# not activate the argument or configuration file parsing engines
-parser = argparse.ArgumentParser(description='python based, bash task execution manager')
-
-parser.add_argument('--testing',
-                             dest    = 'testing',
-                             action  = "store_true" ,
-                             help    = 'will run a series of tests, testing modules not supported yet' )
-parser.add_argument('--use-config',
-                             dest    = 'config_file',
-                             action  = "store_true" ,
-                             help    = 'Use config file, if used, will ignore other options' )
-parser.add_argument('--config-filename',
-                             dest    = 'config_filename',
-                             action  = "store" ,
-                             help    = 'Name of the config file' )
-parser.add_argument('--execute-module',
-                             dest    = 'dynamic_import',
-                             action  = "store_true" ,
-                             help    = 'Will execute user created module if used, will ignore config options ' )
-parser.add_argument('--module-name',
-                             dest    = 'dynamic_import_name',
-                             action  = "store" ,
-                             help    = 'Name of module to load' )
-
+from pybashy.CommandRunner import CommandRunner,ExecutionPool,CommandSet
+from pybashy.useful_functions import yellow_bold_print,redprint 
+from pybashy.useful_functions import parser,list_modules
 # TODO: make this file do something to activate the loader with the current environment, keep the setup and init clean
+def load_modules_from_config():
+    module_pool = {}
+    module_loader = CommandRunner()
+    if extension in list_modules():
+        module_pool[extension] = module_loader.dynamic_import(extension)
+    else:
+        yellow_bold_print("[-] Module not in framework : " + str(extension))
+        raise SystemExit
+    # now that the modules are loaded, assign options to kwargs
+    kwargs     = {}
+    for option, value in config[user_choice]:
+        kwargs[option] = value
+        thing_to_do = CommandSet()
 
 if __name__ == "__main__":
-    arguments = parser.parse_args()
-else:
-    def list_modules():
-        '''
-    Lists modules in command_set directory
-        '''
-        list_of_modules = []
-        command_files_dir = os.path.dirname(__file__) + "/commandset"        
-        list_of_subfiles  = pkgutil.iter_modules([command_files_dir])
-        for filez in list_of_subfiles:
-            print(filez.name)
-            list_of_modules.append(filez.name)
-        return list_of_modules
-
+    
     def execute_test():
         execution_pool = ExecutionPool()
         command_runner = CommandRunner()
         command_pool   = command_runner.dynamic_import('commandtest')
         # printing the contents
 
-    def load_modules_from_config():
-        module_pool = {}
-        module_loader = CommandRunner()
-        if extension in list_modules():
-            module_pool[extension] = module_loader.dynamic_import(extension)
-        else:
-            yellow_bold_print("[-] Module not in framework : " + str(extension))
-            raise SystemExit
-        # now that the modules are loaded, assign options to kwargs
-        kwargs     = {}
-        for option, value in config[user_choice]:
-            kwargs[option] = value
-            thing_to_do = CommandSet()
-        
+    arguments = parser.parse_args()     
     if arguments.testing == True and (arguments.config_file != True):
         execute_test()
     #are we using config?
