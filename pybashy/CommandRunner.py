@@ -38,7 +38,10 @@ Goes running after commands
                         new_command_set = CommandSet()
                         new_command_set.add_command_dict(str.strip("function_",thing_name.__name__),function_command)
                         # add that CommandSet() to the ExecutionPool Named as itself
-                        exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}
+                       
+
+# you stopped working here dummy
+                    exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}
                     # grabbing top level steps
                     try:
                         steps = getattr(file_import,"steps")
