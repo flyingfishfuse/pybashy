@@ -14,7 +14,14 @@ docstring = '''
 import sys
 from pybashy.Command import Command
 from pybashy.useful_functions import error_printer
+
 class CommandSet():
+    ''' metaclass'''
+    def __init__(self,new_command_set_name):
+        ''' waaat'''
+        self.__dict__.update({'name':new_command_set_name})
+
+class ModuleSet(CommandSet):  
     def __new__(cls):
         return super().__new__(cls)
 

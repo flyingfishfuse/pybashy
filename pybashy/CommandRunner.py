@@ -3,7 +3,7 @@ import sys
 import subprocess
 from pathlib import Path
 from importlib import import_module
-from pybashy.CommandSet import CommandSet,Function
+from pybashy.CommandSet import CommandSet,Function,ModuleSet
 from pybashy.ExecutionPool import ExecutionPool
 from pybashy.internal_imports import error_printer
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
@@ -31,8 +31,9 @@ Goes running after commands
         top_level_steps   = {}
         function_command  = {}
         imported_file     = dir(file_import)
-        new_command_set   = CommandSet()
-        setattr(new_command_set.__name__, )
+        module_cmd_set    = ModuleSet()
+        # name set in the module 
+        setattr(module_cmd_set.__name__, )
         try:
             for thing_name in imported_file:
                 if thing_name.startswith('__') != True:
@@ -57,7 +58,7 @@ Goes running after commands
                         #add that command to the function
 
                         # add that function/command to the new CommandSet
-                        new_command_set.add_command_dict(str.strip("function_",thing_name.__name__),function_command)
+                        module_cmd_set.add_command_dict(str.strip("function_",thing_name.__name__),function_command)
                         # add that CommandSet() to the Main CommandSet()
                         # representing the file/module itself
 
@@ -70,17 +71,15 @@ Goes running after commands
                             top_level_steps.update({file_import.__name__ : { key : value}})
                         for thing in basic_items:
                             pass
-                        new_command_set = CommandSet()
-                        new_command_set.add_command_dict(**kwargs)
+                        #module_cmd_set = CommandSet()
+                        #module_cmd_set.add_command_dict(**kwargs)
                     except Exception:
                         error_printer("[-] Failed to import Top Level Steps")
                     else:
                         print(thing_name)
                         # kwargs[thing_name] = getattr(file_import, thing_name)
-            return execute_pool
-
         except SystemExit:
-            error_printer('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?', message = derp)
+            error_printer('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?')
 
     ###################################################################################
     ## Dynamic imports
@@ -91,16 +90,12 @@ Goes running after commands
             - used for the extensions
 
         Usage:
-            thing = class.dynamic_import('name_of_file')
-            returns a CommandSet()
+            class.dynamic_import('name_of_file')
         ''' 
         command_files_name     = 'pybashy.libraries.' + module_to_import
-        imported_file        = import_module(command_files_name)#, package='pybashy')
-        command_pool_dict   = self.get_stuff(imported_file)
-        return command_pool_dict
-        #kwargs = self.get_functions(imported_file)
-        #new_command_set = CommandSet(kwargs)
-        #return new_command_set
+        imported_file          = import_module(command_files_name)#, package='pybashy')
+        self.get_stuff(imported_file)
+
 
 ###############################################################################
 ###############################################################################
