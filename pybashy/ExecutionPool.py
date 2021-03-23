@@ -20,10 +20,11 @@ class ExecutionPool():
         try:
             test_command = {'test1' : ['ls -la ~/','info','pass','fail']}
             test1 = CommandSet()
-            # we only need dict.pop cause we only add ONE DICT!!!
+            # we only add ONE DICT!!!
             # then we append that to the execution pool container
             # uhhhh ... I think it changes it's own name? lolz
-            self.command_set_dict = {test1.add_command_dict(test_command.pop, test_command): test1}
+            # FIND THE CODE TO GET THE NAME!
+            self.command_set_dict = {test1.add_command_dict(test_command.__name__, test_command): test1}
         except Exception:
             error_printer("[-] Failure in ExecutionPool.__init__ during test")
 

@@ -12,7 +12,7 @@ docstring = '''
         new_command.init_self(command_dict)
 '''
 
-from pybashy.useful_functions import error_printer,greenprint
+from pybashy.internal_imports import error_printer,greenprint,CommandFormatException
 
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 
@@ -28,17 +28,30 @@ class Command():
         self.success_message    = str
         self.failure_message    = str
         self.name               = str
-
-    def init_self(self,command: dict):
+    # JSON STRING
+    def init_self(self,command_struct: dict):
+        '''
+        ONLY ONE COMMAND, WILL THROW ERROR IF NOT TO SPEC
+{'ls_etc':
+    { 
+    "command"         : "ls -la /etc" , 
+    "info_message"    : "[+] Info Text", 
+    "success_message" : "[+] Command Sucessful", 
+    "failure_message" : "[-] ls -la Failed! Check the logfile!"
+    }
+}
+        '''
         try:
-            for command_name, command_action_set in command.items():
-                self.name            = command_name
-                self.cmd_line        = command_action_set[0]
-                self.info_message    = command_action_set[1]
-                self.success_message = command_action_set[2]
-                self.failure_message = command_action_set[3]
-        except Exception:
-            error_printer("[-] Instantiation of Command() Failed! One of these is not like the others!")
+            # name self after the command
+            for key in command_struct.keys():
+                self.name        = key
+            # use that to grab the internals
+            internals = command_struct.get(self.name)
+            self.cmd_line        = internals.get("command")
+            self.info_message    = internals.get("info_message")
+            self.success_message = internals.get("success_message")
+            self.failure_message = internals.get("failure_message")
+        except CommandFormatException("[-] Command Failed to MATCH SPECIFICATION")
 
     def __repr__(self):
         greenprint("Command:")

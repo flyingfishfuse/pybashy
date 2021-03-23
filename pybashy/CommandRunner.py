@@ -5,7 +5,7 @@ from pathlib import Path
 from importlib import import_module
 from pybashy.CommandSet import CommandSet
 from pybashy.ExecutionPool import ExecutionPool
-from pybashy.useful_functions import error_printer
+from pybashy.internal_imports import error_printer
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 script_cwd   = Path().absolute()
 script_osdir = Path(__file__).parent.absolute()
