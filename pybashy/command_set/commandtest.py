@@ -82,7 +82,7 @@ apt_install = {
             }
 
 #standalone command list as a name, not for any set or init
-test1 = {
+test1 = { 
            'ls_etc' : { "command"         : "ls -la /etc" ,
                         "info_message"    : "[+] Info Text",
                         "success_message" : "[+] Command Sucessful", 

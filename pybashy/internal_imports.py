@@ -142,6 +142,7 @@ class CommandFormatException(CustomException):
         trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
         if LOGLEVEL == 'DEV_IS_DUMB':
             error_message( derp + ''.join(trace.format_exception_only()))
+            critical_message(errors)
             try:
                 traceback.format_list(traceback.extract_tb(trace)[-1:])[-1]
             except Exception:

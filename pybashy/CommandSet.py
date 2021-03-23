@@ -16,25 +16,43 @@ from pybashy.Command import Command
 from pybashy.useful_functions import error_printer
 class CommandSet():
     def __new__(cls):
-        cls.__name__ = str
         return super().__new__(cls)
 
     def __init__(self):
-        # simply a list of the names
-        # grab by iteration on Command.__name__
-        pass
+        self.name = str
 
-    def add_command_dict(self, name, new_command_dict:dict):
+    def __name__(self):
+        return self.name
+
+    def add_function(self, command_set : CommandSet):
         '''
-        {'test1' : ['ls -la ~/','info','pass','fail']}
+    Assigns a CommandSet() Object to self for the purposes
+    of having "functions" be thier own sets of commands
+
+        - new attribute is named after CommandSet.name
+        name is based on funciton name or command name
+        '''
+        self.__dict__.update({command_set.name : command_set})
+
+    def add_command_dict(self, new_command_dict:dict):
+        '''
+        Names new attribute after command
+        test_var = {'test1' : ['ls -la ~/','info','pass','fail']}
+        CommandSet.add_command_dict(test_var)
+        CommandSet.test1()
+
         '''
         try:
             new_command = Command()
             for command_name, command_container in new_command_dict.items():
                 new_command.init_self({command_name : command_container})
                 # assign Command() to Self
-                setattr(self , new_command.__name__, new_command)
+                setattr(self , new_command.name, new_command)
         # we kill it all here, the imported module didnt validate
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
             sys.exit()
+
+class Function(CommandSet):
+    def __init__(self):
+        '''BLARP!'''

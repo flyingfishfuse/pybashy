@@ -3,7 +3,7 @@ import sys
 import subprocess
 from pathlib import Path
 from importlib import import_module
-from pybashy.CommandSet import CommandSet
+from pybashy.CommandSet import CommandSet,Function
 from pybashy.ExecutionPool import ExecutionPool
 from pybashy.internal_imports import error_printer
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
@@ -21,6 +21,13 @@ Goes running after commands
         pass
 
     def get_stuff(self, file_import):
+        '''
+    This is used to import whole files as modules
+    into a CommandSet() Object
+
+    Functions go in thier own CommandSet() , to be added 
+    as a named attribute
+        '''
         top_level_steps   = {}
         function_command  = {}
         imported_file     = dir(file_import)
@@ -29,16 +36,30 @@ Goes running after commands
         try:
             for thing_name in imported_file:
                 if thing_name.startswith('__') != True:
+                    # create a new Function(CommandSet)
+                    #assign it to module set
                     if thing_name.startswith('function'):
-                        function_internals_list = dir(getattr(file_import, thing_name))
+                        new_function       = Function()
+                        new_function.name  = thing_name.strip('function_')
+                        #grab function internals
+                        function_internals = dir(getattr(file_import, thing_name))
+                        for param in function_internals:
+                            # if it is the dict of commands *cough*droids*cough* we are looking for
+                            if param == "steps" :
+                                #iterate over key,value pairs
+                                for command in param.keys:
+                                    new_attr_name  = command
+                                    new_attr_value = param.get(command)
+                                    new_function.__dict__.update({new_attr_name : new_attr_value})
                         for thing in basic_items:
                             #assign command dict to Command
-                            function_command.update(getattr(function_internals_list,thing))
+                            function_command.update(getattr(function_internals,thing))
+                        #add that command to the function
+
                         # add that function/command to the new CommandSet
-                        new_command_set = CommandSet()
                         new_command_set.add_command_dict(str.strip("function_",thing_name.__name__),function_command)
-                        # add that CommandSet() to the ExecutionPool Named as itself
-                       
+                        # add that CommandSet() to the Main CommandSet()
+                        # representing the file/module itself
 
 # you stopped working here dummy
                     exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}

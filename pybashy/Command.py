@@ -19,15 +19,16 @@ basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_
 class Command():
     def __new__(cls):
         cls.__name__ = str
+        cls.cmd_line           = str
+        cls.info_message       = str
+        cls.success_message    = str
+        cls.failure_message    = str
+        cls.name               = str
         return super().__new__(cls)
 
     # These are for error checking
     def __init__(self):
-        self.cmd_line           = str
-        self.info_message       = str
-        self.success_message    = str
-        self.failure_message    = str
-        self.name               = str
+        pass
     # JSON STRING
     def init_self(self,command_struct: dict):
         '''
@@ -51,8 +52,10 @@ class Command():
             self.info_message    = internals.get("info_message")
             self.success_message = internals.get("success_message")
             self.failure_message = internals.get("failure_message")
-        except CommandFormatException("[-] Command Failed to MATCH SPECIFICATION")
-
+        except CommandFormatException("[-] Command Failed to MATCH SPECIFICATION", command_struct):
+            pass
+    
+    
     def __repr__(self):
         greenprint("Command:")
         print(self.name)
