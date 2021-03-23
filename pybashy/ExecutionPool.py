@@ -15,19 +15,7 @@ class ExecutionPool():
 
     '''
     def __init__(self):
-        # always testing for code change validation
-        # this is the expected workflow
-        try:
-            test_command = {'test1' : ['ls -la ~/','info','pass','fail']}
-            test1 = CommandSet()
-            # we only add ONE DICT!!!
-            # then we append that to the execution pool container
-            # uhhhh ... I think it changes it's own name? lolz
-            # FIND THE CODE TO GET THE NAME!
-            self.command_set_dict = {test1.add_command_dict(test_command.__name__, test_command): test1}
-        except Exception:
-            error_printer("[-] Failure in ExecutionPool.__init__ during test")
-
+        '''asdf'''
     
     def step(self, command : dict):
         '''

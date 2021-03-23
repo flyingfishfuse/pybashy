@@ -15,7 +15,6 @@ docstring = '''
 from pybashy.internal_imports import error_printer,greenprint,CommandFormatException
 
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
-
 class Command():
     def __new__(cls):
         cls.__name__ = str
@@ -25,22 +24,11 @@ class Command():
         cls.failure_message    = str
         cls.name               = str
         return super().__new__(cls)
-
-    # These are for error checking
     def __init__(self):
-        pass
-    # JSON STRING
+        '''init stuff'''
     def init_self(self,command_struct: dict):
         '''
         ONLY ONE COMMAND, WILL THROW ERROR IF NOT TO SPEC
-{'ls_etc':
-    { 
-    "command"         : "ls -la /etc" , 
-    "info_message"    : "[+] Info Text", 
-    "success_message" : "[+] Command Sucessful", 
-    "failure_message" : "[-] ls -la Failed! Check the logfile!"
-    }
-}
         '''
         try:
             # name self after the command
