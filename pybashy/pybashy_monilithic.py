@@ -1,7 +1,9 @@
+
 TESTING = True
 import sys,os
 import logging
 import pkgutil
+import inspect
 import traceback
 import subprocess
 try:
@@ -42,12 +44,15 @@ def error_printer(message):
     exc_type, exc_value, exc_tb = sys.exc_info()
     trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
     if LOGLEVEL == 'DEV_IS_DUMB':
+        debug_message('LINE NUMBER >>>' + str(exc_tb.tb_lineno))
+        greenprint('[+]The Error That Occured Was :')
         error_message( message + ''.join(trace.format_exception_only()))
         try:
-            traceback.format_list(traceback.extract_tb(trace)[-1:])[-1]
+            critical_message("Some info:")
+            makegreen(traceback.format_tb(trace.exc_traceback))
+            #makegreen(traceback.format_list(traceback.extract_tb(trace)[-1:])[-1])
         except Exception:
-            error_message(trace.exc_traceback.tb_frame.f_code)
-        debug_message('LINE NUMBER >>>' + str(exc_tb.tb_lineno))
+            critical_message("Some Info- exception:")
     else:
         error_message(message + ''.join(trace.format_exception_only()))
 
@@ -63,61 +68,36 @@ Lists modules in command_set directory
         list_of_modules.append(filez.name)
     return list_of_modules
 
-class CustomException(Exception):
-    '''Base Class for Internal Exception Labeling'''
-
-class CommandFormatException(CustomException):
-    '''Failure in the text of a Command(command_input)
-    An internal Error unless you are feeding JSON directly
-    to:
-        - Command.init_self(json_str : json)'''
-    def __init__(self, derp:str, errors):
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
-        if LOGLEVEL == 'DEV_IS_DUMB':
-            error_message( derp + ''.join(trace.format_exception_only()))
-            critical_message(errors)
-            try:
-                traceback.format_list(traceback.extract_tb(trace)[-1:])[-1]
-            except Exception:
-                error_message(trace.exc_traceback.tb_frame.f_code)
-            debug_message('LINE NUMBER >>>' + str(exc_tb.tb_lineno))
-        else:
-            error_message(derp + ''.join(trace.format_exception_only()))
-
 #cmdstrjson = {'ls_etc' : {"command" : "ls -la /etc" , "info_message": "[+] Info Text", "success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 
 class Command():
-    def __new__(cls):
-        cls.__name__ = str
-        cls.cmd_line           = str
-        cls.info_message       = str
-        cls.success_message    = str
-        cls.failure_message    = str
-        cls.name               = str
-        return super().__new__(cls)
-    def __init__(self):
-        '''init stuff'''
+    #def __new__(cls):
+        #cls.__name__           = ''
+        #cls.cmd_line           = str
+        #cls.info_message       = str
+        #cls.success_message    = str
+        #cls.failure_message    = str
+        #return super().__new__(cls)
 
-    def init_self(self,command_struct: dict):
-        '''
+    def __init__(self, cmd_name , command_struct):
+        '''init stuff
         ONLY ONE COMMAND, WILL THROW ERROR IF NOT TO SPEC
         '''
+        self.name                = cmd_name
         try:
-            # name self after the command
-            for key in command_struct.keys():
-                self.name        = key
-            # use that to grab the internals
-            internals = command_struct.get(self.name)
-            self.cmd_line        = internals.get("command")
-            self.info_message    = internals.get("info_message")
-            self.success_message = internals.get("success_message")
-            self.failure_message = internals.get("failure_message")
-        except CommandFormatException("[-] Command Failed to MATCH SPECIFICATION", command_struct):
-            pass
-        return self
+            self.cmd_line        = command_struct.get("command")
+            self.info_message    = command_struct.get("info_message")
+            self.success_message = command_struct.get("success_message")
+            self.failure_message = command_struct.get("failure_message")
+        except Exception:
+            error_printer("[-] JSON Input Failed to MATCH SPECIFICATION!\n\n    ")
+
+    #def init_self(self,command_struct: dict):
+            #for key in command_struct.keys():
+            #    self.name        = key
+        #return self
     
     def __repr__(self):
         greenprint("Command:")
@@ -128,29 +108,36 @@ class Command():
     def __name__(self):
         return self.name
 
-class CommandSet:
+class CommandSet():
     ''' metaclass'''
-    def __new__(cls,name):
-        cls.name = name
-    def __init__(self,name):
+    #def __new__(cls):
+    #    cls.name = ''
+    #    return cls
+    
+    def __init__(self):
         ''' waaat'''
-        #self.__dict__.update({'name': name})
+        self.name = str
+
     def __name__(self):
         return self.name
-    def add_command_dict(self, new_command_dict:dict):
+    
+    def add_command_dict(self, cmd_name, new_command_dict):
         try:
-            new_command = Command()
-            for command_name, command_container in new_command_dict.items():
-                new_command.init_self({command_name : command_container})
-                setattr(self , new_command.name, new_command)
+            new_command = Command(cmd_name, new_command_dict)
+            #for command_name, command_container in new_command_dict.items():
+            #    new_command.init_self({command_name : command_container})
+            #    setattr(self , new_command.name, new_command)
+            #new_command.init_self(new_command_dict)
+            setattr(self , new_command.name, new_command)
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
-            sys.exit()
+            #sys.exit()
         return self
 
 class ModuleSet(CommandSet):
     def __init__(self,new_command_set_name):
-        self.__dict__.update({'name':new_command_set_name})
+        self.name = new_command_set_name
+
     def __name__(self):
         return self.name
     def add_function(self, command_set : CommandSet):
@@ -161,18 +148,14 @@ class ModuleSet(CommandSet):
 class FunctionSet(CommandSet):
     def __init__(self):
         '''BLARP!'''
-
     def add_function(self, command_set : CommandSet):
-        '''
-        Assigns a CommandSet() Object to self for the purposes
-        of having "functions" be thier own sets of commands
-        '''
+        '''SPOON! *ooooold cartoon reference*'''
         self.__dict__.update({command_set.name : command_set})
         return self
 
 class ExecutionPool():
     def __init__(self):
-        '''todo : get shell/environ setup'''
+        '''todo : get shell/environ setup and CLEAN THIS SHIT UP MISTER'''
     def step(self, command : dict):
         '''asdf'''
         try:
@@ -246,12 +229,21 @@ class ExecutionPool():
 greenprint('==============================')
 critical_message('-----[+] BEGINNING TEST! -----')
 greenprint('==============================')
-exec_pool = ExecutionPool()
-#new_command_set = CommandSet('test1')
-new_function = FunctionSet('testfunc')
-greenprint("[+] Command names are:")
-for command in cmdstrjson.keys():
-    print(command)
-    CommandSet('test1').add_command_dict(cmdstrjson.get(command))
-    new_function.add_function(cmdstrjson.get(command))
-    #inspect.getmembers(parser, predicate=inspect.ismethod)
+try:
+    exec_pool          = ExecutionPool()
+    #creating a function
+    function_prototype = CommandSet()
+    new_function       = FunctionSet()
+    
+    greenprint("[+] Command name:")
+
+    for command_name in cmdstrjson.keys():
+        print(command_name)
+        function_prototype.name = command_name
+        cmd_dict                = cmdstrjson.get(command_name)
+        function_prototype.add_command_dict(command_name, cmd_dict)
+        print(function_prototype.__class__)
+        new_function.add_function(function_prototype)
+        inspect.getmembers(function_prototype, predicate=inspect.ismethod)
+except Exception:
+    error_printer("WARGLEBARGLE!")
