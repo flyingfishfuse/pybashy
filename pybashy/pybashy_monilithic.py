@@ -252,7 +252,7 @@ try:
         # create the function
         function_prototype.add_command_dict(command_name, cmd_dict)
         # put the function in a
-        new_function.add_command_dict(command_name,function_prototype)
+        new_function.add_command_dict(command_name,cmd_dict)
         #inspect.getmembers(function_prototype, predicate=inspect.ismethod)
 except Exception:
     error_printer("WARGLEBARGLE!")
