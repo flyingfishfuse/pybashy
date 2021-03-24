@@ -151,7 +151,7 @@ class ModuleSet(CommandSet):
     def add_function(self, command_set : CommandSet):
         cmd_name = command_set.name
         self.__dict__.update( { cmd_name : command_set } )
-        return self
+        #return self
 
 class FunctionSet(CommandSet):
     '''This is just a CommandSet under a different name'''
@@ -238,71 +238,58 @@ class CommandRunner:
     '''
 NARF!
 Goes running after commands
+use like :
+    - CommandRunner.dynamic_import('name_of_file')
+And it will create everything from the file and pop it all into an:
+    - ExecutionPool()
+
+SO...
+    - asdf = CommandRunner.dynamic_import('commandtest')
+        Will return an ExecutionPool containing commandtest.py stuff
     '''
     def __init__(self):#,kwargs):
         '''dooo eeeetttt'''
     def get_stuff(self, file_import):
         '''asdf'''
         try:
-            top_level_steps   = {}
-            function_command  = {}
-            imported_file     = dir(file_import)
+            imported_file = dir(file_import)
             module_set    = ModuleSet(imported_file.__name__)
             # name set in the module 
             #setattr(module_cmd_set.__name__, )
-            try:
-                for thing_name in imported_file:
-                    is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
-                    if is_method(thing_name) and thing_name.startswith('__') != True:
-                        # create a new Function(CommandSet)
-                        #assign it to module set
-                        if thing_name.startswith('function'):
-                            # set function name
-                            new_function       = Function()
-                            new_function.name  = thing_name.strip('function_')
-                            #grab function internals from imported module/file
-                            function_internals = dir(getattr(file_import, thing_name))
-                            for param in function_internals:
-                                # if it is the dict of commands *cough*droids*cough* we are looking for
-                                if param == "steps" :
-                                    #iterate over {command name , JSON payload} pairs
-                                    for command_name in param.keys():
-                                        cmd_dict = param.get(command_name)
-                                        # add the command to the function, set command name
-                                        new_function.add_command_dict(command_name,cmd_dict)
-                                        #new_command_set.__dict__.update({new_attr_name : new_attr_value})
-                            #add the function to the ModuleSet()
-                            module_set.add_function(new_function)
-                        # now we assign top level steps and stuff to the 
-                        # ModuleSet()
-                        for thing in basic_items:
-                            #assign command dict to Command
-                            module_set
-                            #add that command to the function
-
-                        # add that function/command to the new CommandSet
-                        module_cmd_set.add_command_dict(str.strip("function_",thing_name.__name__),function_command)
-                        # add that CommandSet() to the Main CommandSet()
-                        # representing the file/module itself
-
-# you stopped working here dummy
-                    exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}
-                    # grabbing top level steps
-                    try:
-                        steps = getattr(file_import,"steps")
-                        for key, value in steps:
-                            top_level_steps.update({file_import.__name__ : { key : value}})
-                        for thing in basic_items:
-                            pass
-                        #module_cmd_set = CommandSet()
-                        #module_cmd_set.add_command_dict(**kwargs)
-                    except Exception:
-                        error_printer("[-] Failed to import Top Level Steps")
-                    else:
-                        print(thing_name)
-                        # kwargs[thing_name] = getattr(file_import, thing_name)
+            for thing_name in imported_file:
+                is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
+                if is_method(thing_name) and thing_name.startswith('__') != True:
+                    # create a new Function(CommandSet)
+                    #assign it to module set
+                    if thing_name.startswith('function'):
+                        # set function name
+                        new_function       = FunctionSet()
+                        new_function.name  = thing_name.strip('function_')
+                        #grab function internals from imported module/file
+                        function_internals = dir(getattr(file_import, thing_name))
+                        for param in function_internals:
+                            # if it is the dict of commands *cough*droids*cough* we are looking for
+                            if param == "steps" :
+                                #iterate over {command name , JSON payload} pairs
+                                for command_name in param.keys():
+                                    cmd_dict = param.get(command_name)
+                                    # add the command to the function, set command name
+                                    new_function.add_command_dict(command_name,cmd_dict)
+                                    #new_command_set.__dict__.update({new_attr_name : new_attr_value})
+                        #add the function to the ModuleSet()
+                        module_set.add_function(new_function)
+                    # now we assign top level steps and stuff to the ModuleSet()
+                #    for thing in basic_items:
+                #        if thing_name == "steps":
+            steps = getattr(file_import,"steps")
+            for command_name in steps.keys():
+                cmd_dict = param.get(command_name)
+                # add the command to the function, set command name
+                module_set.add_command_dict(command_name,cmd_dict)
+                # you stopped working here dummy
+                    #exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}
         except SystemExit:
-            error_printer('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?')
+                error_printer('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?')
 
     ###################################################################################
     ## Dynamic imports
