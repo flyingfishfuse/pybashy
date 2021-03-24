@@ -1,9 +1,11 @@
 # pybashy
 	framework for leveraging python to run sets of shell commands for specific tasks. 
+	
+	Monolithic file is the most complete, seems to have morphed into a json input and things have streamlined, my workflow is wonky
 
 Right now, this is more of a spec for me to follow and will change until the first release
 
-Only one set of commands can be at the top level of a file
+Only one set of commands can be at the top level of a file (now in JSON!)
   - Command Sets are stored as dicts in seperate files and loaded dynamically.
   - Multiple sets can be placed in thier own unique functions
   - functions MUST START with "function"
@@ -49,9 +51,14 @@ Example `loader.py` code:
 	# run the top level dict "steps" from imported module
 	finished_command = exec_pool.worker_bee('commandtest' , new_command.__name__)
 
-Every command is a dict with an array of four string fields as the value:
+Every command is .. json.. ugh:
 	
-	{'test1' : ['ls -la ~/','','','']}
+'ls_etc' : { 
+			 "command"         : "ls -la /etc",
+             "info_message"    : "[+] Info Text",
+             "success_message" : "[+] Command Sucessful", 
+             "failure_message" : "[-] ls -la Failed! Check the logfile!"
+            }
 	
 	Fields are as follows:
   	  - Name of Command : 		key
@@ -60,13 +67,20 @@ Every command is a dict with an array of four string fields as the value:
   	      - Success message		value[2]
   	      - Failure message		value[3]
 
-Multiple commands can be placed in a dict, that are run sequentially:
+Multiple commands can be placed in a ... json whatever... that are run sequentially:
 
-	{
-	  'test1' : ['ls -la ~/','','',''],
-	  'test2' : ['ls -la ./','','','']
-	}
-
+steps = {
+           'ls_etc' : { "command"         : "ls -la /etc" ,
+                        "info_message"    : "[+] Info Text",
+                        "success_message" : "[+] Command Sucessful", 
+                        "failure_message" : "[-] ls -la Failed! Check the logfile!"
+                    },
+            'ls_home' : { "command"         : "ls -la ~/"            ,
+                          "info_message"    : "[+] Info Text"        ,
+                          "success_message" : "[+] Command Sucessful", 
+                          "failure_message" : "[-] ls -la Failed! Check the logfile!"
+                        }
+          }
 
 Basic structure of an extension/script is as thus
 

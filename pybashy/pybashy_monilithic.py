@@ -100,6 +100,7 @@ class Command():
         return super().__new__(cls)
     def __init__(self):
         '''init stuff'''
+
     def init_self(self,command_struct: dict):
         '''
         ONLY ONE COMMAND, WILL THROW ERROR IF NOT TO SPEC
@@ -116,7 +117,7 @@ class Command():
             self.failure_message = internals.get("failure_message")
         except CommandFormatException("[-] Command Failed to MATCH SPECIFICATION", command_struct):
             pass
-    
+        return self
     
     def __repr__(self):
         greenprint("Command:")
@@ -127,7 +128,7 @@ class Command():
     def __name__(self):
         return self.name
 
-class CommandSet():
+class CommandSet:
     ''' metaclass'''
     def __new__(cls,name):
         cls.name = name
@@ -145,14 +146,7 @@ class CommandSet():
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
             sys.exit()
-
-    def add_function(self, command_set : CommandSet):
-        '''
-        Assigns a CommandSet() Object to self for the purposes
-        of having "functions" be thier own sets of commands
-        '''
-        self.__dict__.update({command_set.name : command_set})
-
+        return self
 
 class ModuleSet(CommandSet):
     def __init__(self,new_command_set_name):
@@ -162,14 +156,23 @@ class ModuleSet(CommandSet):
     def add_function(self, command_set : CommandSet):
         cmd_name = command_set.__name__
         self.__dict__.update( { cmd_name : command_set } )
+        return self
 
 class FunctionSet(CommandSet):
     def __init__(self):
         '''BLARP!'''
 
+    def add_function(self, command_set : CommandSet):
+        '''
+        Assigns a CommandSet() Object to self for the purposes
+        of having "functions" be thier own sets of commands
+        '''
+        self.__dict__.update({command_set.name : command_set})
+        return self
+
 class ExecutionPool():
     def __init__(self):
-        '''asdf'''
+        '''todo : get shell/environ setup'''
     def step(self, command : dict):
         '''asdf'''
         try:
@@ -224,21 +227,9 @@ class ExecutionPool():
 
     def exec_command(self, command, blocking = True, shell_env = True):
         '''TODO: add formatting'''
-        #read, write = os.pipe()
-#        step = subprocess.Popen(something_to_set_env, 
-#                        shell=shell_env, 
-#                        stdin=read, 
-#                        stdout=sys.stdout, 
-#                        stderr=subprocess.PIPE)
-#        Note that this is limited to sending a maximum of 64kB at a time,
-#         pretty much an interactive session
-#        byteswritten = os.write(write, str(command))
         try:
             if blocking == True:
-                step = subprocess.Popen(command,
-                            shell=shell_env,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                step = subprocess.Popen(command,shell=shell_env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 output, error = step.communicate()
                 for output_line in output.decode().split('\n'):
                     info_message(output_line)
@@ -252,17 +243,15 @@ class ExecutionPool():
             yellow_bold_print("[-] Interpreter Message: exec_command() failed!")
             return derp
 
-new_command_set = CommandSet('test1')
+greenprint('==============================')
+critical_message('-----[+] BEGINNING TEST! -----')
+greenprint('==============================')
+exec_pool = ExecutionPool()
+#new_command_set = CommandSet('test1')
 new_function = FunctionSet('testfunc')
-
-for command in cmdstrjson.keys:
-    new_command_set.add_command_dict(command.get())
-    new_attr_name  = command
-
-new_attr_value = command.get(new_attr_name)
-new_function.__dict__.update({new_attr_name : new_attr_value})
-
-execution_pool = ExecutionPool()
-command_runner = CommandRunner()
-command_pool   = command_runner.dynamic_import('commandtest')
-# printing the contents
+greenprint("[+] Command names are:")
+for command in cmdstrjson.keys():
+    print(command)
+    CommandSet('test1').add_command_dict(cmdstrjson.get(command))
+    new_function.add_function(cmdstrjson.get(command))
+    #inspect.getmembers(parser, predicate=inspect.ismethod)

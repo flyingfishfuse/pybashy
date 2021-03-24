@@ -47,7 +47,7 @@ __license__ = 'GPLv3'
 __name__  = "CommandTestModule"
 
 # from "steps" to "failure_message" 
-# is considered a CommandSet()
+# is considered a CommandSet() 
 # only one set like this allowed, I guess this would be used for setup operations 
 # and teardown staging
 
