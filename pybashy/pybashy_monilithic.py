@@ -132,26 +132,29 @@ class CommandSet():
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
             #sys.exit()
-        return self
+#        return self
 
 class ModuleSet(CommandSet):
+    ''' This is the class that gets multiple CommandSet() assignments'''
     def __init__(self,new_command_set_name):
+        '''narf '''
         self.name = new_command_set_name
 
     def __name__(self):
         return self.name
+    
     def add_function(self, command_set : CommandSet):
         cmd_name = command_set.__name__
         self.__dict__.update( { cmd_name : command_set } )
         return self
 
 class FunctionSet(CommandSet):
+    '''This is just a CommandSet under a different name'''
     def __init__(self):
         '''BLARP!'''
-    def add_function(self, command_set : CommandSet):
-        '''SPOON! *ooooold cartoon reference*'''
-        self.__dict__.update({command_set.name : command_set})
-        return self
+    def __name__(self):
+        return self.name
+
 
 class ExecutionPool():
     def __init__(self):
@@ -233,6 +236,7 @@ try:
     exec_pool          = ExecutionPool()
     #creating a function
     function_prototype = CommandSet()
+    # we going to assign it to a functionset
     new_function       = FunctionSet()
     
     greenprint("[+] Command name:")
@@ -240,10 +244,15 @@ try:
     for command_name in cmdstrjson.keys():
         print(command_name)
         function_prototype.name = command_name
-        cmd_dict                = cmdstrjson.get(command_name)
+        greenprint("function prototype name")
+        print(function_prototype.name)
+        cmd_dict = cmdstrjson.get(command_name)
+        greenprint("command dict")
+        print(cmd_dict)
+        # create the function
         function_prototype.add_command_dict(command_name, cmd_dict)
-        print(function_prototype.__class__)
-        new_function.add_function(function_prototype)
-        inspect.getmembers(function_prototype, predicate=inspect.ismethod)
+        # put the function in a
+        new_function.add_command_dict(command_name,function_prototype)
+        #inspect.getmembers(function_prototype, predicate=inspect.ismethod)
 except Exception:
     error_printer("WARGLEBARGLE!")
