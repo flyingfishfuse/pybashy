@@ -149,7 +149,7 @@ class ModuleSet(CommandSet):
         return self.name
     
     def add_function(self, command_set : CommandSet):
-        cmd_name = command_set.__name__
+        cmd_name = command_set.name
         self.__dict__.update( { cmd_name : command_set } )
         return self
 
@@ -247,7 +247,7 @@ Goes running after commands
             top_level_steps   = {}
             function_command  = {}
             imported_file     = dir(file_import)
-            module_cmd_set    = ModuleSet(imported_file.__name__)
+            module_set    = ModuleSet(imported_file.__name__)
             # name set in the module 
             #setattr(module_cmd_set.__name__, )
             try:
@@ -257,21 +257,27 @@ Goes running after commands
                         # create a new Function(CommandSet)
                         #assign it to module set
                         if thing_name.startswith('function'):
+                            # set function name
+                            new_function       = Function()
                             new_function.name  = thing_name.strip('function_')
-                            new_function       = Function(new_function.name)
-                            #grab function internals
+                            #grab function internals from imported module/file
                             function_internals = dir(getattr(file_import, thing_name))
                             for param in function_internals:
                                 # if it is the dict of commands *cough*droids*cough* we are looking for
                                 if param == "steps" :
-                                    #iterate over key,value pairs
-                                    for command in param.keys:
-                                        new_attr_name  = command
-                                        new_attr_value = param.get(command)
-                                        new_function.__dict__.update({new_attr_name : new_attr_value})
-                            for thing in basic_items:
-                                #assign command dict to Command
-                                function_command.update(getattr(function_internals,thing))
+                                    #iterate over {command name , JSON payload} pairs
+                                    for command_name in param.keys():
+                                        cmd_dict = param.get(command_name)
+                                        # add the command to the function, set command name
+                                        new_function.add_command_dict(command_name,cmd_dict)
+                                        #new_command_set.__dict__.update({new_attr_name : new_attr_value})
+                            #add the function to the ModuleSet()
+                            module_set.add_function(new_function)
+                        # now we assign top level steps and stuff to the 
+                        # ModuleSet()
+                        for thing in basic_items:
+                            #assign command dict to Command
+                            module_set
                             #add that command to the function
 
                         # add that function/command to the new CommandSet
