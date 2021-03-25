@@ -158,7 +158,7 @@ class ExecutionPool():
         '''todo : get shell/environ setup and CLEAN THIS SHIT UP MISTER'''
         self.set_actions = {}
 
-    def get_actions_from_set(self, command_set):
+    def get_actions_from_set(self, command_set : CommandSet):
         for attribute in command_set.items():
             if attribute.startswith("__") != True:
                 self.set_actions.update({attribute : getattr(command_set,attribute)})
@@ -274,12 +274,6 @@ In a variable named spiffy
         imported_file          = import_module(command_files_name)#, package='pybashy')
         return imported_file
 
-def object_inspector(object_to_inspect):
-    inspect.getmembers(object_to_inspect, predicate=inspect.ismethod)
-
-greenprint('==============================')
-critical_message('-----[+] BEGINNING TEST! -----')
-greenprint('==============================')
 cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 exec_pool          = ExecutionPool()
 module_set         = ModuleSet('test1')
@@ -303,13 +297,3 @@ try:
         setattr(exec_pool, module_set.__name__, module_set)
 except Exception:
     error_printer("WAAAAGHHH!\n\n")
-
-trace_of_issue ='''
-Traceback (most recent call last):
-  File "./pybashy_monilithic.py", line 296, in <module>
-    module_set.add_function(new_function.name)
-  File "./pybashy_monilithic.py", line 150, in add_function
-    function_name = function_set.name
-AttributeError: type object 'str' has no attribute 'name'
-
-'''
