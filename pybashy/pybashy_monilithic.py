@@ -55,6 +55,8 @@ def error_printer(message):
         error_message( message + ''.join(trace.format_exception_only()))
         try:
             critical_message("Some info:")
+            exc_info = sys.exc_info()
+            traceback.print_exception(*exc_info)
             makegreen(traceback.format_tb(trace.exc_traceback))
             #makegreen(traceback.format_list(traceback.extract_tb(trace)[-1:])[-1])
         except Exception:
@@ -284,20 +286,22 @@ function_prototype = CommandSet()
 new_function       = FunctionSet()
 runner = CommandRunner(exec_pool = exec_pool)
 #runner.get_stuff("test.py")
-for command_name in cmdstrjson.keys():
-    cmd_dict = cmdstrjson.get(command_name)
-    critical_message('[+] Adding command_dict to FunctionSet()')
-    new_function.add_command_dict(command_name,cmd_dict)
+try:
+    for command_name in cmdstrjson.keys():
+        cmd_dict = cmdstrjson.get(command_name)
+        critical_message('[+] Adding command_dict to FunctionSet()')
+        new_function.add_command_dict(command_name,cmd_dict)
 
-    critical_message('[+] Adding command_dict to ModuleSet()')
-    module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
+        critical_message('[+] Adding command_dict to ModuleSet()')
+        module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
 
-    critical_message('[+] Adding FunctionSet() to ModuleSet()')
-    module_set.add_function(new_function.name)
-        
-    critical_message('[+] Adding ModuleSet() to ExecutionPool()')
-    setattr(exec_pool, module_set.__name__, module_set)
+        critical_message('[+] Adding FunctionSet() to ModuleSet()')
+        module_set.add_function(new_function.name)
 
+        critical_message('[+] Adding ModuleSet() to ExecutionPool()')
+        setattr(exec_pool, module_set.__name__, module_set)
+except Exception:
+    error_printer("WAAAAGHHH!\n\n")
 trace_of_issue ='''
 Traceback (most recent call last):
   File "./pybashy_monilithic.py", line 296, in <module>
