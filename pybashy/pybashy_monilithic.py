@@ -115,60 +115,50 @@ class Command():
         return self.name
 
 class CommandSet():
-    ''' metaclass'''
-    #def __new__(cls):
-    #    cls.name = ''
-    #    return cls
-    
+    ''' metaclass'''   
     def __init__(self):
         ''' waaat'''
-        self.name = str
-
-    def __name__(self):
-        return self.name
+        self.name         = str
+        self.__name__     = self.name
+        self.__qualname__ = self.__name__
     
     def __repr__(self):
-        yellow_bold_print("HI! I AM A CommandSet() inside:!")
+        yellow_bold_print("HI! I AM A CommandSet()!")
     
     def add_command_dict(self, cmd_name, new_command_dict):
         try:
             new_command = Command(cmd_name, new_command_dict)
-            #for command_name, command_container in new_command_dict.items():
-            #    new_command.init_self({command_name : command_container})
-            #    setattr(self , new_command.name, new_command)
-            #new_command.init_self(new_command_dict)
             setattr(self , new_command.name, new_command)
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
-            #sys.exit()
-#        return self
-
-class ModuleSet(CommandSet):
-    ''' This is the class that gets multiple CommandSet() assignments'''
-    def __init__(self,new_command_set_name):
-        '''narf '''
-        self.name = new_command_set_name
-
-    def __name__(self):
-        return self.name
-    def __repr__(self):
-         yellow_bold_print("HI! I AM A ModuleSet() ")
-    
-    def add_function(self, command_set : CommandSet):
-        cmd_name = command_set.name
-        setattr(self, cmd_name, command_set)
-        #return self
 
 class FunctionSet(CommandSet):
     '''This is just a CommandSet under a different name'''
     def __init__(self):
-        '''BLARP!'''
-    def __name__(self):
-        return self.name
-
+        '''This is a functionSet()'''
+        # I shouldn't have to declare this twice, why did it not work?!?!
+        self.name         = str
+        self.__name__     = self.name
+        self.__qualname__ = self.__name__
+        
     def __repr__(self):
          yellow_bold_print("HI! I AM A FunctionSet() ")
 
+class ModuleSet(CommandSet):
+    ''' This is the class that gets multiple CommandSet() assignments
+    assigned to it. It is a python representation of the input file JSON'''
+    def __init__(self,new_module_name):
+        '''this is a ModuleSet() '''
+        self.name         = new_module_name
+        self.__name__     = self.name
+        self.__qualname__ = self.__name__
+
+    def __repr__(self):
+         yellow_bold_print("HI! I AM A ModuleSet() ")
+
+    def add_function(self, function_set : FunctionSet):
+        function_name = function_set.name
+        setattr(self, function_name, function_set)
 
 class ExecutionPool():
     def __init__(self):
@@ -239,14 +229,17 @@ class CommandRunner:
     '''
 NARF!
 Goes running after commands
-use like :
-    - CommandRunner.dynamic_import('name_of_file')
-And it will create everything from the file and pop it all into an:
+will create everything from the file and pop it all into an:
     - ExecutionPool()
 
 SO...
-    - asdf = CommandRunner.dynamic_import('commandtest')
-        Will return an ExecutionPool containing commandtest.py stuff
+    spiffy = ExecutionPool()
+    lolwat = CommandRunner()
+    lolwat.get_stuff('commandtest')
+
+Will return an ExecutionPool containing commandtest.py stuff
+In a variable named lolwat
+
     '''
     def __init__(self):
         '''dooo eeeetttt'''
@@ -269,7 +262,6 @@ SO...
                                 for command_name in param.keys():
                                     cmd_dict = param.get(command_name)
                                     new_function.add_command_dict(command_name,cmd_dict)
-                                    #new_command_set.__dict__.update({new_attr_name : new_attr_value})
                         #add the function to the ModuleSet()
                         module_set.add_function(new_function)
             # now we assign top level steps and stuff to the ModuleSet()
@@ -311,10 +303,10 @@ try:
         module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
 
         critical_message('[+] Adding FunctionSet() to ModuleSet()')
-        module_set.add_function(new_function)
+        module_set.add_function(new_function.name)
         
         critical_message('[+] Adding ModuleSet() to ExecutionPool()')
         setattr(exec_pool, module_set.__name__, module_set)
 
 except Exception:
-    error_printer("WARGLEBARGLE!")
+    error_printer("WARGLEBARGLE! \n")
