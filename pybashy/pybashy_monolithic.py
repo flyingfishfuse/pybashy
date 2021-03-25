@@ -8,10 +8,13 @@ import traceback
 import subprocess
 from pathlib import Path
 from importlib import import_module
+from sqlalchemy import create_engine
+from sqlalchemy import inspect
+from sqlalchemy.pool import StaticPool
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_utils import database_exists
+from flask import Flask, render_template, Response, Request ,Config
 
-is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
-script_cwd   = Path().absolute()
-script_osdir = Path(__file__).parent.absolute()
 try:
     import colorama
     from colorama import init
@@ -23,29 +26,169 @@ except ImportError as derp:
     print("[-] NO COLOR PRINTING FUNCTIONS AVAILABLE, Install the Colorama Package from pip")
     COLORMEQUALIFIED = False
 
-blueprint= lambda text: print(Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-greenprint= lambda text: print(Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-redprint= lambda text: print(Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+################################################################################
+##############                      VARS                       #################
+################################################################################
+is_method           = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
+script_cwd          = Path().absolute()
+script_osdir        = Path(__file__).parent.absolute()
+list_of_db_tables   = ['Vegetables','Fruits','Herbs','Flowers','Other']
+db_is_initialized   = bool
+db_is_populated     = bool
+test_commit_result  = bool
 
-makered= lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makegreen= lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeblue= lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-makeyellow= lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
+redprint   = lambda text: print(Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+blueprint  = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
+greenprint = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
 yellow_bold_print= lambda text: print(Fore.YELLOW + Style.BRIGHT + ' {} '.format(text) + Style.RESET_ALL) if (COLORMEQUALIFIED == True) else print(text)
-
+makeyellow = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else text
 LOGLEVEL = 'DEV_IS_DUMB'
 LOGLEVELS = [1,2,3,'DEV_IS_DUMB']
 
-log_file  = 'garden_grid_message_log'
+log_file  = 'pybashy'
 logging.basicConfig(filename=log_file, format='%(asctime)s %(message)s', filemode='w')
 logger    = logging.getLogger()
 
-debug_message = lambda message: logger.debug(blueprint(message)) 
-info_message  = lambda message: logger.info(greenprint(message))   
+debug_message    = lambda message: logger.debug(blueprint(message)) 
+info_message     = lambda message: logger.info(greenprint(message))   
 warning_message  = lambda message: logger.warning(yellow_bold_print(message)) 
 error_message    = lambda message: logger.error(redprint(message)) 
 critical_message = lambda message: logger.critical(yellow_bold_print(message))
+################################################################################
+##############                      CONFIG                     #################
+################################################################################
+TEST_DB            = 'sqlite://'
+DATABASE           = "pybashy"
+LOCAL_CACHE_FILE   = 'sqlite:///' + DATABASE + ".db"
+DATABASE_FILENAME  = DATABASE + '.db'
 
+if database_exists(LOCAL_CACHE_FILE) or os.path.exists(DATABASE_FILENAME):
+    DATABASE_EXISTS = True
+else:
+    DATABASE_EXISTS = False        
+  
+class Config(object):
+# TESTING = True
+# set in the std_imports for a global TESTING at top level scope
+    SQLALCHEMY_DATABASE_URI = LOCAL_CACHE_FILE
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+try:
+    engine = create_engine(LOCAL_CACHE_FILE , connect_args={"check_same_thread": False},poolclass=StaticPool)
+    PybashyDatabase = Flask(__name__ )
+    PybashyDatabase.config.from_object(Config)
+    PybashyDB = SQLAlchemy(PybashyDatabase)
+    PybashyDB.init_app(PybashyDatabase)
+    if TESTING == True:
+        PybashyDB.metadata.clear()
+except Exception:
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    tb = traceback.TracebackException(exc_type, exc_value, exc_tb) 
+    error_message("[-] Database Initialization FAILED \n" + ''.join(tb.format_exception_only()))
+
+#########################################################
+###                    PLANT MODEL
+#########################################################
+class Command(PybashyDB.Model):
+    __tablename__       = 'CommandSets'
+    #__table_args__      = {'extend_existing': True}
+    id                  = PybashyDB.Column(PybashyDB.Integer,
+                                          index         = True,
+                                          unique        = True,
+                                          autoincrement = True)
+    command_name                  = PybashyDB.Column(PybashyDB.String(256))                                          
+    payload                       = PybashyDB.Column(PybashyDB.Text,
+                                          primary_key   = True)
+    notes                         = PybashyDB.Column(PybashyDB.Text)
+
+    def __repr__(self):
+        return '''=========================================
+CommandSet Name : {}
+CommandSet_JSON : {} 
+Notes           : {}
+'''.format(self.command_name,
+            self.payload,
+            self.notes
+        )
+
+#########################################################
+###                    GARDEN MODEL
+#########################################################
+class Garden(PybashyDB.Model):
+    __tablename__       = 'Garden'
+    #__table_args__      = {'extend_existing': True}
+    id               = PybashyDB.Column(PybashyDB.Integer,
+                            index         =True,
+                            unique        =True,
+                            autoincrement =True)
+    name             = PybashyDB.Column(PybashyDB.String(256),
+                            primary_key   = True)
+    hemisphere       = PybashyDB.Column(PybashyDB.String(256))
+    zone             = PybashyDB.Column(PybashyDB.String(256))
+    notes            = PybashyDB.Column(PybashyDB.String(256))
+    grid_data        = PybashyDB.Column(PybashyDB.Text)
+
+    def __repr__(self):
+        return '''
+=========================================
+name       : {} 
+hemisphere : {}
+zone       : {}
+notes      : {}
+=========================================
+'''.format(self.name,
+            self.hemisphere,
+            self.zone,
+            self.notes
+        )
+
+#########################################################
+###             DATABASE FUNCTIONS
+#########################################################
+def add_cmd_to_db(cmd_to_add):
+    """
+    "name" is the primary key of DB, is unique
+    """
+    try:
+        if PybashyDB.session.query(cmd_to_add).filter_by(name=cmd_to_add.name).scalar() is not None:
+            info_message('[+] Duplicate Entry Avoided : ' + cmd_to_add.name)
+        # and doesnt get added
+        else: # and it does if it doesnt... which works out somehow ;p
+            info_message('[+] Plant Added To Database : ' + cmd_to_add.name)
+            PybashyDB.session.add(cmd_to_add)
+
+    except Exception:
+        error_printer("[-] add_plant_to_db() FAILED")
+
+#########################################################
+###                  TEST ENTRIES 
+#########################################################
+test_plant = Plants(plant_type      = 'Fruit',
+                    name            = 'fuck apple',
+                    scientific_name = 'fruitus givafuckus',
+                    helps           = 'thineself',
+                    helped_by       = 'cannabis indica',
+                    attracts_insects= 'ladybugs',
+                    repels_insects  = 'mosquitos',
+                    bad_for         = 'negative vibes',
+                    notes           = 'Grows best in in the sun giving shade'
+                    )
+test_garden = Garden(name = 'home base',
+                     hemisphere = 'south',
+                     zone = '9a',
+                     notes = 'bada-bing bada-boom, big badaboom'
+                    )
+
+
+def does_plant_exists(self,plant_name):
+    try:
+        if PybashyDB.session.query(Plants.id).filter_by(name=plant_name).first() is not None:
+            info_message('[+] Plant {} Exists'.format(plant_name))
+            return True
+        else:
+            return False        
+    except Exception:
+        error_printer('[-] Database VERIFICATION FAILED!')
 def error_printer(message):
     exc_type, exc_value, exc_tb = sys.exc_info()
     trace = traceback.TracebackException(exc_type, exc_value, exc_tb) 
@@ -145,7 +288,7 @@ class ModuleSet(CommandSet):
         self.__qualname__ = self.__name__
 
     def __repr__(self):
-         yellow_bold_print("HI! I AM A ModuleSet() ")
+        return yellow_bold_print("HI! I AM A ModuleSet() named : {}".format(self.name))
 
     def add_function(self, function_set : FunctionSet):
         function_name = function_set.name
@@ -274,6 +417,12 @@ In a variable named spiffy
         imported_file          = import_module(command_files_name)#, package='pybashy')
         return imported_file
 
+
+
+########################################################################
+####                    TESTING EXEC POOL NOW                       ####
+###             # NEVER FEAR, THE END IS FUCKING NEAR!#              ###
+########################################################################
 cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 exec_pool          = ExecutionPool()
 module_set         = ModuleSet('test1')
@@ -297,3 +446,26 @@ try:
         setattr(exec_pool, module_set.__name__, module_set)
 except Exception:
     error_printer("WAAAAGHHH!\n\n")
+
+def load_modules_from_config():
+    module_pool = {}
+    module_loader = CommandRunner()
+    if extension in list_modules():
+        module_pool[extension] = module_loader.dynamic_import(extension)
+    else:
+        yellow_bold_print("[-] Module not in framework : " + str(extension))
+        raise SystemExit
+    # now that the modules are loaded, assign options to kwargs
+    kwargs     = {}
+    for option, value in config[user_choice]:
+        kwargs[option] = value
+        thing_to_do = CommandSet()
+
+if __name__ == "__main__":
+    import arg_config_parse
+    
+    def execute_test():
+        execution_pool = ExecutionPool()
+        command_runner = CommandRunner()
+        command_pool   = command_runner.dynamic_import('commandtest')
+        # printing the contents
