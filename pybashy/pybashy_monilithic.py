@@ -74,19 +74,9 @@ Lists modules in command_set directory
         list_of_modules.append(filez.name)
     return list_of_modules
 
-#cmdstrjson = {'ls_etc' : {"command" : "ls -la /etc" , "info_message": "[+] Info Text", "success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"}}
-cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 basic_items  = ['__name__', 'steps','success_message', 'failure_message', 'info_message']
 
 class Command():
-    #def __new__(cls):
-        #cls.__name__           = ''
-        #cls.cmd_line           = str
-        #cls.info_message       = str
-        #cls.success_message    = str
-        #cls.failure_message    = str
-        #return super().__new__(cls)
-
     def __init__(self, cmd_name , command_struct):
         '''init stuff
         ONLY ONE COMMAND, WILL THROW ERROR IF NOT TO SPEC
@@ -146,7 +136,8 @@ class FunctionSet(CommandSet):
 
 class ModuleSet(CommandSet):
     ''' This is the class that gets multiple CommandSet() assignments
-    assigned to it. It is a python representation of the input file JSON'''
+    assigned to it. It is a python representation of the input file JSON.
+    Remember, python will change things in that file as it loads it'''
     def __init__(self,new_module_name):
         '''this is a ModuleSet() '''
         self.name         = new_module_name
@@ -238,10 +229,10 @@ SO...
     lolwat.get_stuff('commandtest')
 
 Will return an ExecutionPool containing commandtest.py stuff
-In a variable named lolwat
+In a variable named spiffy
 
     '''
-    def __init__(self):
+    def __init__(self, exec_pool : ExecutionPool):
         '''dooo eeeetttt'''
 
     def get_stuff(self, file_import):
@@ -287,12 +278,13 @@ def object_inspector(object_to_inspect):
 greenprint('==============================')
 critical_message('-----[+] BEGINNING TEST! -----')
 greenprint('==============================')
+cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
 try:
     exec_pool          = ExecutionPool()
     module_set         = ModuleSet('test1')
     function_prototype = CommandSet()
     new_function       = FunctionSet()
-    runner = CommandRunner()
+    runner = CommandRunner(exec_pool = exec_pool)
     #runner.get_stuff("test.py")
     for command_name in cmdstrjson.keys():
         cmd_dict = cmdstrjson.get(command_name)
