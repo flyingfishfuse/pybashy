@@ -108,18 +108,17 @@ class CommandSet():
        
     def __init__(self):
         ''' waaat'''
-        self.name         = str
+        self.name         = ''
         self.__name__     = self.name
         self.__qualname__ = self.__name__
     
     def __repr__(self):
         yellow_bold_print("HI! I AM A CommandSet()!")
     
-    @classmethod
-    def add_command_dict(cls, cmd_name, new_command_dict):
+    def add_command_dict(self, cmd_name, new_command_dict):
         try:
             new_command = Command(cmd_name, new_command_dict)
-            setattr(cls , new_command.name, new_command)
+            setattr(self , new_command.name, new_command)
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
 
@@ -128,7 +127,7 @@ class FunctionSet(CommandSet):
     def __init__(self):
         '''This is a functionSet()'''
         # I shouldn't have to declare this twice, why did it not work?!?!
-        self.name         = str
+        self.name         = ''
         self.__name__     = self.name
         self.__qualname__ = self.__name__
         
@@ -150,6 +149,8 @@ class ModuleSet(CommandSet):
 
     def add_function(self, function_set : FunctionSet):
         function_name = function_set.name
+        greenprint("INTERNAL: ModuleSet().add_function(FunctionSet())")
+        print(function_set.name)
         setattr(self, function_name, function_set)
 
 class ExecutionPool():
@@ -296,12 +297,13 @@ try:
         module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
 
         critical_message('[+] Adding FunctionSet() to ModuleSet()')
-        module_set.add_function(new_function.name)
+        module_set.add_function(new_function)
 
         critical_message('[+] Adding ModuleSet() to ExecutionPool()')
         setattr(exec_pool, module_set.__name__, module_set)
 except Exception:
     error_printer("WAAAAGHHH!\n\n")
+
 trace_of_issue ='''
 Traceback (most recent call last):
   File "./pybashy_monilithic.py", line 296, in <module>
