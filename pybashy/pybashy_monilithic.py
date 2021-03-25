@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 from importlib import import_module
 
+is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
 script_cwd   = Path().absolute()
 script_osdir = Path(__file__).parent.absolute()
 try:
@@ -126,6 +127,9 @@ class CommandSet():
     def __name__(self):
         return self.name
     
+    def __repr__(self):
+        yellow_bold_print("HI! I AM A CommandSet() inside:!")
+    
     def add_command_dict(self, cmd_name, new_command_dict):
         try:
             new_command = Command(cmd_name, new_command_dict)
@@ -147,10 +151,12 @@ class ModuleSet(CommandSet):
 
     def __name__(self):
         return self.name
+    def __repr__(self):
+         yellow_bold_print("HI! I AM A ModuleSet() ")
     
     def add_function(self, command_set : CommandSet):
         cmd_name = command_set.name
-        self.__dict__.update( { cmd_name : command_set } )
+        setattr(self, cmd_name, command_set)
         #return self
 
 class FunctionSet(CommandSet):
@@ -160,30 +166,22 @@ class FunctionSet(CommandSet):
     def __name__(self):
         return self.name
 
+    def __repr__(self):
+         yellow_bold_print("HI! I AM A FunctionSet() ")
+
 
 class ExecutionPool():
     def __init__(self):
         '''todo : get shell/environ setup and CLEAN THIS SHIT UP MISTER'''
-    def step(self, command : dict):
-        '''asdf'''
-        try:
-            for name, action_set in command.items():
-                cmd     = action_set[0]
-                info    = action_set[1]
-                success = action_set[2]
-                fail    = action_set[3]
-                yellow_bold_print(info)
-                self.current_command = cmd
-                cmd_exec = self.exec_command(self.exec_command(name))
-                if cmd_exec.returncode == 0 :
-                    info_message(success)
-                else:
-                    raise OSError.with_traceback()
-        except Exception:
-            error_printer(fail)
+        self.set_actions = {}
+
+    def get_actions_from_set(self, command_set):
+        for attribute in command_set.items():
+            if attribute.startswith("__") != True:
+                self.set_actions.update({attribute : getattr(command_set,attribute)})
 
     def run_set(self, command_set : CommandSet):
-        for command_name, command_object in command_set.command_list.items():
+        for command_name, command_object in command_set.items:
             print(command_name)
             command_line    = getattr(command_object,'cmd_line')
             success_message = getattr(command_object,'success_message')
@@ -191,13 +189,16 @@ class ExecutionPool():
             info_message    = getattr(command_object,'info_message')
             yellow_bold_print(info_message)
             try:
-                self.step(command_line)
+                self.exec_command(command_line)
                 print(success_message)
             except Exception:
                 error_printer(failure_message)
 
     def run_function(self,command_set, function_to_run ):
         '''
+        Feed it a CommandSet object and function name
+        Remember, everything is strings in dicts until runtime
+        ... Actually... thats pretty much all of python lol
         '''
         try:
             #requesting a specific Command()
@@ -208,7 +209,7 @@ class ExecutionPool():
             info_message    = getattr(command_object,'info_message')
             yellow_bold_print(info_message)
             try:
-                self.step(command_line)
+                self.exec_command(command_line)
                 print(success_message)
             except Exception:
                 error_printer(failure_message)
@@ -247,83 +248,73 @@ SO...
     - asdf = CommandRunner.dynamic_import('commandtest')
         Will return an ExecutionPool containing commandtest.py stuff
     '''
-    def __init__(self):#,kwargs):
+    def __init__(self):
         '''dooo eeeetttt'''
+
     def get_stuff(self, file_import):
         '''asdf'''
         try:
             imported_file = dir(file_import)
             module_set    = ModuleSet(imported_file.__name__)
-            # name set in the module 
-            #setattr(module_cmd_set.__name__, )
             for thing_name in imported_file:
-                is_method = lambda func: inspect.getmembers(func, predicate=inspect.ismethod)
                 if is_method(thing_name) and thing_name.startswith('__') != True:
                     # create a new Function(CommandSet)
-                    #assign it to module set
                     if thing_name.startswith('function'):
                         # set function name
                         new_function       = FunctionSet()
                         new_function.name  = thing_name.strip('function_')
-                        #grab function internals from imported module/file
                         function_internals = dir(getattr(file_import, thing_name))
                         for param in function_internals:
-                            # if it is the dict of commands *cough*droids*cough* we are looking for
                             if param == "steps" :
-                                #iterate over {command name , JSON payload} pairs
                                 for command_name in param.keys():
                                     cmd_dict = param.get(command_name)
-                                    # add the command to the function, set command name
                                     new_function.add_command_dict(command_name,cmd_dict)
                                     #new_command_set.__dict__.update({new_attr_name : new_attr_value})
                         #add the function to the ModuleSet()
                         module_set.add_function(new_function)
-                    # now we assign top level steps and stuff to the ModuleSet()
-                #    for thing in basic_items:
-                #        if thing_name == "steps":
+            # now we assign top level steps and stuff to the ModuleSet()
             steps = getattr(file_import,"steps")
             for command_name in steps.keys():
                 cmd_dict = param.get(command_name)
                 # add the command to the function, set command name
                 module_set.add_command_dict(command_name,cmd_dict)
-                # you stopped working here dummy
-                    #exec_pool_addendum = {str.strip("function_",thing_name.__name__) : new_command_set}
+            #add module to execution pool
+            setattr(exec_pool, module_set.__name__, module_set)
         except SystemExit:
                 error_printer('[-] CRITICAL ERROR: input file didnt validate, check your syntax maybe?')
 
-    ###################################################################################
-    ## Dynamic imports
-    ###################################################################################
     def dynamic_import(self, module_to_import:str):
         '''class.dynamic_import('name_of_file')''' 
         command_files_name     = 'pybashy.libraries.' + module_to_import
         imported_file          = import_module(command_files_name)#, package='pybashy')
-        self.get_stuff(imported_file)
+        return imported_file
+
+def object_inspector(object_to_inspect):
+    inspect.getmembers(object_to_inspect, predicate=inspect.ismethod)
 
 greenprint('==============================')
 critical_message('-----[+] BEGINNING TEST! -----')
 greenprint('==============================')
 try:
     exec_pool          = ExecutionPool()
-    #creating a function
+    module_set         = ModuleSet('test1')
     function_prototype = CommandSet()
-    # we going to assign it to a functionset
     new_function       = FunctionSet()
-    
-    greenprint("[+] Command name:")
-
+    runner = CommandRunner()
+    #runner.get_stuff("test.py")
     for command_name in cmdstrjson.keys():
-        print(command_name)
-        function_prototype.name = command_name
-        greenprint("function prototype name")
-        print(function_prototype.name)
         cmd_dict = cmdstrjson.get(command_name)
-        greenprint("command dict")
-        print(cmd_dict)
-        # create the function
-        function_prototype.add_command_dict(command_name, cmd_dict)
-        # put the function in a
+        critical_message('[+] Adding command_dict to FunctionSet()')
         new_function.add_command_dict(command_name,cmd_dict)
-        #inspect.getmembers(function_prototype, predicate=inspect.ismethod)
+
+        critical_message('[+] Adding command_dict to ModuleSet()')
+        module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
+
+        critical_message('[+] Adding FunctionSet() to ModuleSet()')
+        module_set.add_function(new_function)
+        
+        critical_message('[+] Adding ModuleSet() to ExecutionPool()')
+        setattr(exec_pool, module_set.__name__, module_set)
+
 except Exception:
     error_printer("WARGLEBARGLE!")
