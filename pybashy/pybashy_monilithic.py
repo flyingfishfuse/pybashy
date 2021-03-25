@@ -90,22 +90,20 @@ class Command():
         except Exception:
             error_printer("[-] JSON Input Failed to MATCH SPECIFICATION!\n\n    ")
 
-    #def init_self(self,command_struct: dict):
-            #for key in command_struct.keys():
-            #    self.name        = key
-        #return self
-    
     def __repr__(self):
         greenprint("Command:")
         print(self.name)
         greenprint("Command String:")
         print(self.cmd_line)
 
-    def __name__(self):
-        return self.name
-
 class CommandSet():
-    ''' metaclass'''   
+    ''' metaclass'''
+    #def __new__(cls):
+    #    ''' waaat'''
+    #    cls.name         = str
+    #    cls.__name__     = cls.name
+    #    cls.__qualname__ = cls.__name__
+       
     def __init__(self):
         ''' waaat'''
         self.name         = str
@@ -115,10 +113,11 @@ class CommandSet():
     def __repr__(self):
         yellow_bold_print("HI! I AM A CommandSet()!")
     
-    def add_command_dict(self, cmd_name, new_command_dict):
+    @classmethod
+    def add_command_dict(cls, cmd_name, new_command_dict):
         try:
             new_command = Command(cmd_name, new_command_dict)
-            setattr(self , new_command.name, new_command)
+            setattr(cls , new_command.name, new_command)
         except Exception:
             error_printer('[-] Interpreter Message: CommandSet() Could not Init')  
 
@@ -225,7 +224,7 @@ will create everything from the file and pop it all into an:
 
 SO...
     spiffy = ExecutionPool()
-    lolwat = CommandRunner()
+    lolwat = CommandRunner(exec_pool = spiffy)
     lolwat.get_stuff('commandtest')
 
 Will return an ExecutionPool containing commandtest.py stuff
@@ -279,26 +278,32 @@ greenprint('==============================')
 critical_message('-----[+] BEGINNING TEST! -----')
 greenprint('==============================')
 cmdstrjson = {'ls_etc' : { "command": "ls -la /etc","info_message":"[+] Info Text","success_message" : "[+] Command Sucessful", "failure_message" : "[-] ls -la Failed! Check the logfile!"},'ls_home' : { "command" : "ls -la ~/","info_message" : "[+] Info Text","success_message" : "[+] Command Sucessful","failure_message" : "[-] ls -la Failed! Check the logfile!"}}
-try:
-    exec_pool          = ExecutionPool()
-    module_set         = ModuleSet('test1')
-    function_prototype = CommandSet()
-    new_function       = FunctionSet()
-    runner = CommandRunner(exec_pool = exec_pool)
-    #runner.get_stuff("test.py")
-    for command_name in cmdstrjson.keys():
-        cmd_dict = cmdstrjson.get(command_name)
-        critical_message('[+] Adding command_dict to FunctionSet()')
-        new_function.add_command_dict(command_name,cmd_dict)
+exec_pool          = ExecutionPool()
+module_set         = ModuleSet('test1')
+function_prototype = CommandSet()
+new_function       = FunctionSet()
+runner = CommandRunner(exec_pool = exec_pool)
+#runner.get_stuff("test.py")
+for command_name in cmdstrjson.keys():
+    cmd_dict = cmdstrjson.get(command_name)
+    critical_message('[+] Adding command_dict to FunctionSet()')
+    new_function.add_command_dict(command_name,cmd_dict)
 
-        critical_message('[+] Adding command_dict to ModuleSet()')
-        module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
+    critical_message('[+] Adding command_dict to ModuleSet()')
+    module_set.add_command_dict(command_name, cmdstrjson.get(command_name))
 
-        critical_message('[+] Adding FunctionSet() to ModuleSet()')
-        module_set.add_function(new_function.name)
+    critical_message('[+] Adding FunctionSet() to ModuleSet()')
+    module_set.add_function(new_function.name)
         
-        critical_message('[+] Adding ModuleSet() to ExecutionPool()')
-        setattr(exec_pool, module_set.__name__, module_set)
+    critical_message('[+] Adding ModuleSet() to ExecutionPool()')
+    setattr(exec_pool, module_set.__name__, module_set)
 
-except Exception:
-    error_printer("WARGLEBARGLE! \n")
+trace_of_issue ='''
+Traceback (most recent call last):
+  File "./pybashy_monilithic.py", line 296, in <module>
+    module_set.add_function(new_function.name)
+  File "./pybashy_monilithic.py", line 150, in add_function
+    function_name = function_set.name
+AttributeError: type object 'str' has no attribute 'name'
+
+'''
